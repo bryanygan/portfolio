@@ -1,0 +1,113 @@
+---
+import '@fontsource/poppins/400.css';
+import '@fontsource/poppins/500.css';
+import '@fontsource/poppins/600.css';
+import '@fontsource/poppins/700.css';
+import '../styles/global.css';
+import Header from '../components/Header.astro';
+import Footer from '../components/Footer.astro';
+import StructuredData from '../components/StructuredData.astro';
+
+interface Props {
+	title: string;
+	description?: string;
+	canonicalUrl?: string;
+}
+
+const { 
+	title, 
+	description = 'Senior Front-end Developer Portfolio',
+	canonicalUrl = Astro.url.pathname 
+} = Astro.props;
+
+// Construct the full canonical URL
+const siteUrl = 'https://renatokhael.com';
+const fullCanonicalUrl = `${siteUrl}${canonicalUrl}`;
+---
+
+<!doctype html>
+<html lang="pt-BR">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content={description} />
+		<meta name="viewport" content="width=device-width" />
+		
+		<!-- SEO Tags -->
+		<link rel="canonical" href={fullCanonicalUrl} />
+		<meta name="robots" content="index, follow" />
+		<meta http-equiv="X-Robots-Tag" content="index, follow" />
+		
+		<!-- Hreflang Tags -->
+		<link rel="alternate" hreflang="pt-BR" href={fullCanonicalUrl} />
+		<link rel="alternate" hreflang="x-default" href={fullCanonicalUrl} />
+		
+		<!-- Favicons -->
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+		<link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+		<link rel="manifest" href="/site.webmanifest" />
+		
+		<!-- Social Media Tags -->
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:url" content={fullCanonicalUrl} />
+		<meta property="og:type" content="website" />
+		<meta property="og:image" content={`${siteUrl}/android-chrome-512x512.png`} />
+		<meta property="og:locale" content="pt_BR" />
+		
+		<!-- Twitter Tags -->
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
+		<meta name="twitter:image" content={`${siteUrl}/android-chrome-512x512.png`} />
+		
+		<meta name="generator" content={Astro.generator} />
+		<title>{title}</title>
+		
+		<!-- Structured Data -->
+		<StructuredData 
+			type="person"
+			title={title}
+			description={description}
+		/>
+		<StructuredData 
+			type="website"
+			title={title}
+			description={description}
+		/>
+	</head>
+	<body class="font-sans transition-colors duration-300 bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text">
+		<Header />
+		<main>
+			<slot />
+		</main>
+		<Footer />
+		<script>
+			// Theme toggle functionality
+			const themeToggle = document.getElementById('theme-toggle');
+			const savedTheme = localStorage.getItem('theme') || 'light';
+			
+			// Apply saved theme on load
+			if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+				document.documentElement.classList.add('dark');
+			} else {
+				document.documentElement.classList.remove('dark');
+			}
+			
+			themeToggle?.addEventListener('click', () => {
+				const isDark = document.documentElement.classList.toggle('dark');
+				localStorage.setItem('theme', isDark ? 'dark' : 'light');
+			});
+		</script>
+	</body>
+</html>
+
+<style>
+	html,
+	body {
+		margin: 0;
+		width: 100%;
+		height: 100%;
+	}
+</style>

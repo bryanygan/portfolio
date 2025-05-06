@@ -1,0 +1,62 @@
+---
+import Section from '../ui/Section.astro';
+import Card from '../ui/Card.astro';
+
+// Get the company logos
+interface Experience {
+  company: string;
+  logo: string;
+  position: string;
+  period: string;
+  description: string;
+}
+
+const experiences: Experience[] = [
+{
+    company: 'Drexel University',
+    logo: '/assets/svgs/drexel.png',
+    position: 'IMS Classroom AV & Graphics Lab Assistant',
+    period: 'March 2025 - Present',
+    description: 'Supported classroom technology and graphics services by troubleshooting AV issues, assisting users, handling equipment checkouts, and managing print jobs in a university media environment.'
+  },
+  {
+    company: 'Advantage Solutions',
+    logo: '/assets/svgs/advantagesolutions.jpg',
+    position: 'Amazon Fresh Brand Ambassador',
+    period: 'July 2024 - September 2024',
+    description: 'Promoted Amazon Fresh products by preparing samples, engaging customers, maintaining food safety standards, and supporting in-store marketing efforts through active product demonstrations and feedback collection.'
+  },
+  {
+    company: 'Eatontown Recreation',
+    logo: '/assets/svgs/eatontownrec.png',
+    position: 'Summer Camp Counselor',
+    period: 'July 2019 - September 2022',
+    description: 'Led youth activities, ensured camper safety and engagement, enforced camp policies, and maintained clean, organized recreational facilities while fostering a positive and inclusive camp environment.'
+  }
+];
+---
+
+<Section id="experience" title="Professional Experience">
+  <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {
+      experiences.map(({ company, logo, position, period, description }) => (
+        <Card hover={true} class="h-full">
+          <div class="p-6 flex flex-col h-full">
+            <div class="flex items-center mb-4">
+              <div class="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden flex items-center justify-center mr-4">
+                <img src={logo} alt={company} class="w-10 h-10 object-contain" />
+              </div>
+              <div>
+                <h3 class="font-bold text-xl">{company}</h3>
+                <p class="text-sm text-gray-500 dark:text-gray-400">{period}</p>
+              </div>
+            </div>
+            
+            <h4 class="text-lg font-bold mb-2 text-[#4169E1]">{position}</h4>
+            <p class="text-gray-600 dark:text-gray-300 text-sm mt-auto">{description}</p>
+          </div>
+        </Card>
+      ))
+    }
+  </div>
+</Section> 

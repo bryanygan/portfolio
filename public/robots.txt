@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+
+# Disallow specific patterns if needed
+# Disallow: /admin/
+
+# Sitemap location
+Sitemap: https://renatokhael.com/sitemap.xml 

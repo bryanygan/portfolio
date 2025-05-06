@@ -1,0 +1,61 @@
+---
+// This component handles all the structured data (Schema.org) for SEO
+
+interface Props {
+  type?: 'person' | 'website';
+  title?: string;
+  description?: string;
+  imageUrl?: string;
+}
+
+const {
+  type = 'person',
+  title = 'Renato Khael - Engenheiro de Software',
+  description = 'Portfolio profissional de Renato Khael, Engenheiro de Software e Desenvolvedor Front-end Senior.',
+  imageUrl = 'https://renatokhael.com/android-chrome-512x512.png'
+} = Astro.props;
+
+const baseUrl = 'https://renatokhael.com';
+
+// Person Schema
+const personSchema = {
+  "@context": "https://schema.org",
+  "@type": "Person",
+  "name": "Renato Khael",
+  "url": baseUrl,
+  "image": `${baseUrl}/android-chrome-512x512.png`,
+  "sameAs": [
+    "https://www.linkedin.com/in/rkhael/",
+    "https://www.youtube.com/@renatokhael"
+  ],
+  "jobTitle": "Engenheiro de Software",
+  "worksFor": {
+    "@type": "Organization",
+    "name": "Renato Khael"
+  },
+  "description": description
+};
+
+// Website Schema
+const websiteSchema = {
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "url": baseUrl,
+  "name": title,
+  "description": description,
+  "author": {
+    "@type": "Person",
+    "name": "Renato Khael"
+  },
+  "potentialAction": {
+    "@type": "SearchAction",
+    "target": `${baseUrl}/search?q={search_term_string}`,
+    "query-input": "required name=search_term_string"
+  }
+};
+
+// Choose which schema to use based on the type prop
+const schema = type === 'person' ? personSchema : websiteSchema;
+---
+
+<script type="application/ld+json" set:html={JSON.stringify(schema)}></script> 

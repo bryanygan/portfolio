@@ -1,0 +1,82 @@
+---
+import Section from '../ui/Section.astro';
+import Card from '../ui/Card.astro';
+import Button from '../ui/Button.astro';
+
+interface Project {
+  title: string;
+  description: string;
+  image: string;
+  tags: string[];
+  liveUrl?: string;
+  repoUrl?: string;
+}
+
+const projects: Project[] = [
+  {
+    title: 'MunchMatch',
+    description: 'Built a responsive web app that recommends meals based on user flavor preferences, contributing to both front-end design and Agile team development.',
+    image: '/assets/images/projects/munchmatch.png',
+    tags: ['HTML', 'CSS', 'JavaScript', 'GitLab', 'Agile'],
+    liveUrl: 'https://munchmatch-2h7.pages.dev',
+    
+  },
+  {
+    title: 'Banking System',
+    description: 'Developed a command-line banking application supporting account creation, transactions, and APR-based interest calculations for Checking, Savings, and CD accounts.',
+    image: '/assets/images/projects/bankingsystem.png',
+    tags: ['Java', 'JUnit', 'GitLab'],
+    liveUrl: 'https://github.com/bryanygan/bankingsystem',
+   
+  },
+  {
+    title: 'Discord Bots',
+    description: 'Developed multiple Discord bots to automate tasks such as point tracking, OTP scraping, promo code retrieval, interactive command systems, and email parsing.',
+    image: '/assets/images/projects/discbot.png',
+    tags: ['JavaScript', 'Node.js', 'Python', 'Raspberry Pi', 'Git', 'HTML'],
+    liveUrl: 'hhttps://github.com/bryanygan/promoscraper',
+    
+  }
+];
+---
+
+<Section id="projects" title="Projects" subtitle="My best recent work and projects.">
+  <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+    {
+      projects.map((project) => (
+        <Card hover={true} class="overflow-hidden h-full flex flex-col">
+          <div class="h-48 overflow-hidden">
+            <img src={project.image} alt={project.title} class="w-full h-full object-cover" />
+          </div>
+          <div class="p-6 flex-grow flex flex-col">
+            <h3 class="text-xl font-bold mb-2">{project.title}</h3>
+            <p class="text-gray-600 dark:text-gray-300 text-sm mb-4">{project.description}</p>
+            
+            <div class="mt-auto">
+              <div class="flex flex-wrap gap-2 mb-4">
+                {project.tags.map((tag) => (
+                  <span class="px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded-md">
+                    {tag}
+                  </span>
+                ))}
+              </div>
+              
+              <div class="flex gap-3">
+                {project.liveUrl && (
+                  <Button href={project.liveUrl} variant="outline" target="_blank" size="lg">
+                    View Project
+                  </Button>
+                )}
+                {project.repoUrl && (
+                  <Button href={project.repoUrl} target="_blank" variant="outline" size="lg">
+                    Code
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+        </Card>
+      ))
+    }
+  </div>
+</Section> 
