@@ -101,7 +101,14 @@ import Button from "../ui/Button.astro";
     </Card>
 
     <Card class="p-8">
-      <form id="contact-form" class="space-y-6">
+      <form
+        id="contact-form"
+        action="https://api.web3forms.com/submit"
+        method="POST"
+        class="space-y-6"
+      >
+        <input type="hidden" name="access_key" value="fa88a037-02c2-4f4f-b44d-b7d920a2ab87" />
+        <input type="hidden" name="redirect" value="https://web3forms.com/success" />
         <div>
           <label for="name" class="block text-sm font-medium mb-1"
             >Name</label
@@ -168,17 +175,3 @@ import Button from "../ui/Button.astro";
     </Card>
   </div>
 </Section>
-
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const form = document.getElementById("contact-form") as HTMLFormElement;
-
-    form?.addEventListener("submit", (e) => {
-      e.preventDefault();
-
-
-      alert("Message sent successfully!");
-      form.reset();
-    });
-  });
-</script>
