@@ -1,0 +1,86 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Section from '../components/ui/Section.astro';
+import Card from '../components/ui/Card.astro';
+import Button from '../components/ui/Button.astro';
+
+interface BotProject {
+  title: string;
+  description: string;
+  image: string;
+  tags: string[];
+  liveUrl?: string;
+  repoUrl?: string;
+}
+
+const botProjects: BotProject[] = [
+  {
+    title: 'Promo Scraper',
+    description: 'Discord bot that connects to your Gmail via IMAP to fetch and share promo code emails and one-time passwords. Checks for used email addresses and filters them out.',
+    image: '/assets/images/projects/prinbotblurcrop.png',
+    tags: ['Python', 'discord.py', 'IMAP'],
+    liveUrl: 'https://discord.com/oauth2/authorize?client_id=1366416241283305565',
+    repoUrl: 'https://github.com/bryanygan/promoscraper'
+  },
+  {
+    title: 'Point Tracker',
+    description: 'Node.js bot that awards points for image posts, supports slash commands for leaderboards, backfills history, and manages point overrides.',
+    image: '/assets/images/projects/printrack.png',
+    tags: ['Node.js', 'discord.js', 'quick.db'],
+    liveUrl: 'https://discord.com/oauth2/authorize?client_id=1368951336833384459',
+    repoUrl: 'https://github.com/bryanygan/pointtracker'
+  },
+  {
+    title: 'Status Bot',
+    description: 'Python bot for renaming Discord channels to "Open" or "Closed" by detecting keywords, with built‑in rate‑limit handling and ephemeral error feedback.',
+    image: '/assets/images/projects/prinopener.png',
+    tags: ['Python', 'discord.py', 'Rate Limiting', 'Channel Management'],
+    liveUrl: 'https://discord.com/oauth2/authorize?client_id=1374017695489458379',
+    repoUrl: 'https://github.com/bryanygan/prinopener'
+  }
+];
+---
+
+<Layout title="Discord Bots | Bryan Gan">
+  <Section id="bots" title="Discord Bots" subtitle="Bots and automation projects for Discord. Developed using AI tools to provide efficient solutions for my community.">
+    <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {
+        botProjects.map((project) => (
+          <Card hover={true} class="overflow-hidden h-full flex flex-col">
+            <div class="h-80 overflow-hidden">
+              <img src={project.image} alt={project.title} class="w-full h-full object-cover" />
+            </div>
+            <div class="p-6 flex-grow flex flex-col">
+              <h3 class="text-xl font-bold mb-2">{project.title}</h3>
+              <p class="text-gray-600 dark:text-gray-300 text-sm mb-4">{project.description}</p>
+              
+              <div class="mt-auto">
+                <div class="flex flex-wrap gap-2 mb-4">
+                  {project.tags.map((tag) => (
+                    <span class="px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded-md">
+                      {tag}
+                    </span>
+                  ))}
+                </div>
+                
+                <div class="flex gap-3">
+                {project.repoUrl && (
+                    <Button href={project.repoUrl} target="_blank" variant="outline" size="lg">
+                      GitHub
+                    </Button>
+                  )}
+                  {project.liveUrl && (
+                    <Button href={project.liveUrl} variant="outline" target="_blank" size="lg">
+                      Discord Invite
+                    </Button>
+                  )}
+
+                </div>
+              </div>
+            </div>
+          </Card>
+        ))
+      }
+    </div>
+  </Section>
+</Layout>
