@@ -90,7 +90,7 @@ const BotSimulator = () => {
         {/* Chat Area */}
         <div className="flex">
           {/* Main Chat */}
-          <div className="flex-1 flex flex-col h-96">
+          <div className="flex-1 flex flex-col h-[700px]">
             <ChatInterface messages={messages} isTyping={isTyping} />
             <CommandInput onCommand={simulateCommand} />
           </div>
