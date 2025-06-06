@@ -9,7 +9,7 @@ export default defineConfig({
     react(),
     tailwind()
   ],
-  output: 'hybrid',
+  output: 'server',
   adapter: cloudflare(),
   integrations: [react()],
 });
