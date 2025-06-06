@@ -19,35 +19,12 @@ function isRateLimited(ip) {
   return record.count > RATE_LIMIT_MAX_REQUESTS;
 }
 
-export async function POST({ request }) {
-  const ip =
-    request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
-    request.headers.get('x-real-ip') ||
-    request.headers.get('cf-connecting-ip') ||
-    'unknown';
+// This makes this specific route server-rendered
+export const prerender = false;
 
-  if (isRateLimited(ip)) {
-    return new Response(
-      JSON.stringify({ response: '❌ Rate limit exceeded. Try again later.' }),
-      {
-        status: 429,
-        headers: { 'Content-Type': 'application/json' }
-      }
-    );
-  }
+export async function POST({ request }) {
   try {
     const { command, params, pools } = await request.json();
-
-    // Validate payload before processing
-    if (!isValidRequest(command, params, pools)) {
-      return new Response(
-        JSON.stringify({ response: '❌ Invalid request payload' }),
-        {
-          status: 400,
-          headers: { 'Content-Type': 'application/json' }
-        }
-      );
-    }
     
     // Parse command
     const commandParts = command.trim().split(' ');
@@ -127,33 +104,6 @@ const getMockOrderData = () => ({
   notes: 'Leave at door',
   tip: '5.00'
 });
-
-function isPlainObject(value) {
-  return value !== null && typeof value === 'object' && !Array.isArray(value);
-}
-
-function isValidPools(pools) {
-  return (
-    isPlainObject(pools) &&
-    Array.isArray(pools.cards) &&
-    pools.cards.every(c => typeof c === 'string') &&
-    Array.isArray(pools.emails) &&
-    pools.emails.every(e => typeof e === 'string')
-  );
-}
-
-function isValidRequest(command, params, pools) {
-  if (typeof command !== 'string' || !command.trim().startsWith('/')) {
-    return false;
-  }
-  if (!isPlainObject(params)) {
-    return false;
-  }
-  if (!isValidPools(pools)) {
-    return false;
-  }
-  return true;
-}
 
 async function handleFusionAssist(params, pools) {
   if (pools.cards.length === 0) {
