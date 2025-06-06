@@ -1,4 +1,3 @@
-// src/pages/api/bot-simulate.js
 export async function POST({ request }) {
   try {
     const { command, params, pools } = await request.json();
@@ -24,6 +23,10 @@ export async function POST({ request }) {
         ({ response, embed, updatedPools } = await handleWoolOrder(params, pools));
         break;
         
+      case '/wool_details':
+        ({ response, embed } = handleWoolDetails());
+        break;
+        
       case '/payments':
         ({ response, embed } = handlePayments());
         break;
@@ -41,8 +44,12 @@ export async function POST({ request }) {
         ({ response, embed } = handleChannelStatus(commandName));
         break;
         
+      case '/help':
+        ({ response, embed } = handleHelp());
+        break;
+        
       default:
-        response = `❌ Unknown command: ${commandName}\n\nAvailable commands:\n• \`/fusion_assist\`\n• \`/fusion_order\`\n• \`/wool_order\`\n• \`/payments\`\n• \`/add_card\`\n• \`/add_email\`\n• \`/open\`\n• \`/close\``;
+        response = `❌ Unknown command: ${commandName}\n\nAvailable commands:\n• \`/fusion_assist\`\n• \`/fusion_order\`\n• \`/wool_order\`\n• \`/payments\`\n• \`/add_card\`\n• \`/add_email\`\n• \`/open\`\n• \`/close\`\n• \`/help\``;
     }
     
     return new Response(JSON.stringify({
@@ -305,4 +312,70 @@ function getPoolWarnings(pools) {
   if (pools.cards.length === 0) warnings.push('⚠️ Card pool empty!');
   if (pools.emails.length === 0) warnings.push('⚠️ Email pool empty!');
   return warnings.length > 0 ? warnings.join(' | ') : null;
+}
+
+function handleHelp() {
+  const embed = {
+    title: 'ZR Eats Bot Commands',
+    description: 'Here are all the available commands you can use:',
+    color: '#4169E1',
+    fields: [
+      {
+        name: '🍔 Order Commands',
+        value: '```\n/fusion_assist mode:UberEats\n/fusion_order\n/wool_order\n/wool_details\n```\nGenerate order commands with pool resources'
+      },
+      {
+        name: '💳 Payment Commands', 
+        value: '```\n/payments\n```\nDisplay available payment methods'
+      },
+      {
+        name: '⚙️ Admin Commands',
+        value: '```\n/add_card number:1234... cvv:123\n/add_email email:test@example.com\n/open\n/close\n```\nManage pools and channel status'
+      },
+      {
+        name: '📝 Examples',
+        value: 'Try these commands:\n• `/payments` - See payment options\n• `/fusion_assist mode:UberEats` - Generate assist command\n• `/wool_details` - Show parsed order details\n• `/help` - Show this help message'
+      }
+    ],
+    footer: 'Commands are case-sensitive. Use exactly as shown above.'
+  };
+  
+  return {
+    response: '📋 Command help displayed!',
+    embed
+  };
+}
+
+function handleWoolDetails() {
+  const embed = {
+    title: 'Wool Order Details',
+    color: '#ff6600',
+    fields: [
+      {
+        name: 'Group Cart Link:',
+        value: '```\nhttps://eats.uber.com/group-orders/s7dhi1-3e6f-4c0f-9699-c032b1kj75/join?source=quickActionCopy\n```'
+      },
+      {
+        name: 'Name:',
+        value: '```\nLebron,James\n```'
+      },
+      {
+        name: 'Address Line 2:',
+        value: '```\nCrypto.com Arena\n```'
+      },
+      {
+        name: 'Delivery Notes:',
+        value: '```\nMeet at Door\n```'
+      },
+      {
+        name: 'Tip:',
+        value: '$7'
+      }
+    ]
+  };
+  
+  return {
+    response: '📋 Wool order details parsed and displayed!',
+    embed
+  };
 }

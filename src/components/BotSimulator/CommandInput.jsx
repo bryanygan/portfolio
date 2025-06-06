@@ -1,4 +1,3 @@
-// src/components/BotSimulator/CommandInput.jsx
 import { useState, useRef, useEffect } from 'react';
 
 const CommandInput = ({ onCommand, isProcessing }) => {
@@ -211,7 +210,7 @@ const CommandInput = ({ onCommand, isProcessing }) => {
         {/* Quick Commands */}
         <div className="mt-3 flex flex-wrap gap-2">
           <span className="text-xs text-gray-400">Quick commands:</span>
-          {['/help', '/payments', '/fusion_assist'].map(cmd => (
+          {['/help', '/payments', '/wool_details', '/fusion_assist'].map(cmd => (
             <button
               key={cmd}
               type="button"
