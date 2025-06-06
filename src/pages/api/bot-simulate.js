@@ -1,4 +1,40 @@
+const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
+const RATE_LIMIT_MAX_REQUESTS = 5;
+const rateLimitStore = new Map();
+
+function isRateLimited(ip) {
+  const now = Date.now();
+  let record = rateLimitStore.get(ip);
+  if (!record) {
+    record = { count: 1, start: now };
+    rateLimitStore.set(ip, record);
+    return false;
+  }
+  if (now - record.start > RATE_LIMIT_WINDOW_MS) {
+    record.count = 1;
+    record.start = now;
+    return false;
+  }
+  record.count += 1;
+  return record.count > RATE_LIMIT_MAX_REQUESTS;
+}
+
 export async function POST({ request }) {
+  const ip =
+    request.headers.get('x-forwarded-for')?.split(',')[0].trim() ||
+    request.headers.get('x-real-ip') ||
+    request.headers.get('cf-connecting-ip') ||
+    'unknown';
+
+  if (isRateLimited(ip)) {
+    return new Response(
+      JSON.stringify({ response: '❌ Rate limit exceeded. Try again later.' }),
+      {
+        status: 429,
+        headers: { 'Content-Type': 'application/json' }
+      }
+    );
+  }
   try {
     const { command, params, pools } = await request.json();
     
