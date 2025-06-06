@@ -59,8 +59,7 @@ const CommandInput = ({ onCommand, isProcessing }) => {
     cmd.name.toLowerCase().includes(input.toLowerCase()) && input.startsWith('/')
   );
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
+  const handleSubmit = () => {
     if (!input.trim() || isProcessing) return;
 
     // Parse command and parameters
@@ -79,6 +78,13 @@ const CommandInput = ({ onCommand, isProcessing }) => {
     onCommand(command, params);
     setInput('');
     setShowSuggestions(false);
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
+    }
   };
 
   const handleInputChange = (e) => {
@@ -165,7 +171,7 @@ const CommandInput = ({ onCommand, isProcessing }) => {
       )}
 
       {/* Input Form */}
-      <form onSubmit={handleSubmit} className="p-4">
+      <div className="p-4">
         <div className="flex gap-3 items-end">
           <div className="flex-1 relative">
             <input
@@ -173,7 +179,10 @@ const CommandInput = ({ onCommand, isProcessing }) => {
               type="text"
               value={input}
               onChange={handleInputChange}
-              onKeyDown={handleKeyDown}
+              onKeyDown={(e) => {
+                handleKeyDown(e);
+                handleKeyPress(e);
+              }}
               placeholder="Type a command (start with /) or message..."
               disabled={isProcessing}
               className="w-full bg-gray-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -188,8 +197,9 @@ const CommandInput = ({ onCommand, isProcessing }) => {
           </div>
           
           <button
-            type="submit"
+            type="button"
             disabled={!input.trim() || isProcessing}
+            onClick={handleSubmit}
             className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
           >
             {isProcessing ? (
@@ -211,7 +221,7 @@ const CommandInput = ({ onCommand, isProcessing }) => {
         {/* Quick Commands */}
         <div className="mt-3 flex flex-wrap gap-2">
           <span className="text-xs text-gray-400">Quick commands:</span>
-          {['/help', '/payments', '/fusion_assist'].map(cmd => (
+          {['/help', '/payments', '/wool_details', '/fusion_assist'].map(cmd => (
             <button
               key={cmd}
               type="button"
@@ -222,7 +232,7 @@ const CommandInput = ({ onCommand, isProcessing }) => {
             </button>
           ))}
         </div>
-      </form>
+      </div>
     </div>
   );
 };

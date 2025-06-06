@@ -13,7 +13,7 @@ const BotSimulator = () => {
   ]);
   const [isTyping, setIsTyping] = useState(false);
   const [pools, setPools] = useState({
-    cards: ['4111111111111111,123', '4222222222222222,456'],
+    cards: ['3856273926573829,123', '3948374615728453,456'],
     emails: ['user1@example.com', 'user2@example.com']
   });
 
@@ -90,7 +90,7 @@ const BotSimulator = () => {
         {/* Chat Area */}
         <div className="flex">
           {/* Main Chat */}
-          <div className="flex-1 flex flex-col h-96">
+          <div className="flex-1 flex flex-col h-[700px]">
             <ChatInterface messages={messages} isTyping={isTyping} />
             <CommandInput onCommand={simulateCommand} />
           </div>
