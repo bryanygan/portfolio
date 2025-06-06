@@ -128,7 +128,15 @@ The site is fully responsive and optimized for performance and SEO out of the bo
    yarn install
    ```
 
-3. **Run development server**
+3. **Create a `.env` file**
+
+   ```bash
+   cp .env.example .env
+   ```
+
+   Add your Web3Forms access key to `WEB3FORMS_ACCESS_KEY` in the new `.env` file.
+
+4. **Run development server**
 
    ```bash
    npm run dev
