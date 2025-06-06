@@ -174,6 +174,48 @@ const ChatInterface = ({ messages, isTyping }) => {
     return parts;
   };
 
+  // Parse text for bold markdown (**text**)
+  const parseBold = (text, keyPrefix) => {
+    const result = [];
+    const boldRegex = /\*\*(.*?)\*\*/g;
+    let lastIndex = 0;
+    let match;
+
+    boldRegex.lastIndex = 0;
+
+    while ((match = boldRegex.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        result.push({
+          type: 'text',
+          content: text.slice(lastIndex, match.index),
+          key: `${keyPrefix}-text-${lastIndex}`
+        });
+      }
+
+      result.push({
+        type: 'bold',
+        content: match[1],
+        key: `${keyPrefix}-bold-${match.index}`
+      });
+
+      lastIndex = match.index + match[0].length;
+    }
+
+    if (lastIndex < text.length) {
+      result.push({
+        type: 'text',
+        content: text.slice(lastIndex),
+        key: `${keyPrefix}-text-${lastIndex}`
+      });
+    }
+
+    if (result.length === 0) {
+      result.push({ type: 'text', content: text, key: `${keyPrefix}-text-0` });
+    }
+
+    return result;
+  };
+
   // Alternative parsing approach - more robust
   const parseContent = (content) => {
     if (!content) return [];
@@ -206,12 +248,9 @@ const ChatInterface = ({ messages, isTyping }) => {
               key: `inline-${index}-${inlineIndex}`
             });
           } else if (inlinePart) {
-            // This is regular text
-            result.push({
-              type: 'text',
-              content: inlinePart,
-              key: `text-${index}-${inlineIndex}`
-            });
+            // Parse bold markdown inside regular text
+            const boldParts = parseBold(inlinePart, `bold-${index}-${inlineIndex}`);
+            result.push(...boldParts);
           }
         });
       }
@@ -230,6 +269,12 @@ const ChatInterface = ({ messages, isTyping }) => {
           return <CodeBlock key={part.key}>{part.content}</CodeBlock>;
         case 'inlinecode':
           return <CodeBlock key={part.key} inline>{part.content}</CodeBlock>;
+        case 'bold':
+          return (
+            <span key={part.key} className="font-bold whitespace-pre-wrap">
+              {part.content}
+            </span>
+          );
         case 'text':
           return <span key={part.key} className="whitespace-pre-wrap">{part.content}</span>;
         default:
