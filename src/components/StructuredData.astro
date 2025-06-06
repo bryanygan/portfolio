@@ -10,28 +10,27 @@ interface Props {
 
 const {
   type = 'person',
-  title = 'Renato Khael - Engenheiro de Software',
-  description = 'Portfolio profissional de Renato Khael, Engenheiro de Software e Desenvolvedor Front-end Senior.',
-  imageUrl = 'https://renatokhael.com/android-chrome-512x512.png'
+  title = 'Bryan Gan - Software Engineer',
+  description = 'Professional portfolio of Bryan Gan, Software Engineer.',
+  imageUrl = 'https://bryangan.com/android-chrome-512x512.png'
 } = Astro.props;
 
-const baseUrl = 'https://renatokhael.com';
+const baseUrl = 'https://bryangan.com';
 
 // Person Schema
 const personSchema = {
   "@context": "https://schema.org",
   "@type": "Person",
-  "name": "Renato Khael",
+  "name": "Bryan Gan",
   "url": baseUrl,
   "image": `${baseUrl}/android-chrome-512x512.png`,
   "sameAs": [
-    "https://www.linkedin.com/in/rkhael/",
-    "https://www.youtube.com/@renatokhael"
+    "https://www.linkedin.com/in/bryanygan/",
   ],
-  "jobTitle": "Engenheiro de Software",
+  "jobTitle": "Software Engineer",
   "worksFor": {
     "@type": "Organization",
-    "name": "Renato Khael"
+    "name": "Bryan Gan"
   },
   "description": description
 };
@@ -45,7 +44,7 @@ const websiteSchema = {
   "description": description,
   "author": {
     "@type": "Person",
-    "name": "Renato Khael"
+    "name": "Bryan Gan",
   },
   "potentialAction": {
     "@type": "SearchAction",
