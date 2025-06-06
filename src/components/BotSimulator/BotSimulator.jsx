@@ -103,7 +103,9 @@ const BotSimulator = () => {
                 <p className="text-gray-400 text-sm">Cards: {pools.cards.length}</p>
                 <div className="bg-gray-800 rounded p-2 text-xs text-gray-300">
                   {pools.cards.slice(0, 2).map((card, i) => (
-                    <div key={i}>****{card.split(',')[0].slice(-4)}</div>
+                    <div key={i} className="font-bold">
+                      {card.split(',')[0].slice(-4)}
+                    </div>
                   ))}
                   {pools.cards.length > 2 && <div>+{pools.cards.length - 2} more</div>}
                 </div>
