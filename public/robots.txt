@@ -5,4 +5,4 @@ Allow: /
 # Disallow: /admin/
 
 # Sitemap location
-Sitemap: https://renatokhael.com/sitemap.xml 
+Sitemap: https://bryangan.com/sitemap.xml
