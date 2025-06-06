@@ -8,5 +8,5 @@ export default defineConfig({
     react(),
     tailwind()
   ],
-  output: 'server'
+  output: 'static'
 });
