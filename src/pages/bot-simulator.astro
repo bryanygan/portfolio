@@ -1,0 +1,32 @@
+---
+import Layout from '../layouts/Layout.astro';
+import BotSimulatorComponent from '../components/BotSimulator/BotSimulator.jsx';
+---
+
+<Layout 
+  title="Discord Bot Simulator | Bryan Gan" 
+  description="Interactive simulation of my Discord bot functionality. Test commands and see real-time responses in a Discord-like interface."
+>
+  <section class="pt-32 pb-20">
+    <div class="container mx-auto px-4">
+      <div class="text-center mb-12">
+        <h1 class="text-3xl md:text-4xl font-bold mb-4 text-[#ff5748]">
+          Discord Bot Simulator
+        </h1>
+        <p class="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
+          Experience my Discord bots in action! Test commands, see real responses, and explore the functionality 
+          without needing to join a Discord server.
+        </p>
+      </div>
+      
+      <BotSimulatorComponent client:load />
+      
+      <div class="mt-12 text-center">
+        <p class="text-sm text-gray-500 dark:text-gray-400">
+          Want to add this bot to your Discord server? 
+          <a href="#contact" class="text-primary hover:underline ml-1">Contact me</a>
+        </p>
+      </div>
+    </div>
+  </section>
+</Layout>
