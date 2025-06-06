@@ -2,6 +2,8 @@
 import Section from "../ui/Section.astro";
 import Card from "../ui/Card.astro";
 import Button from "../ui/Button.astro";
+
+const accessKey = import.meta.env.WEB3FORMS_ACCESS_KEY;
 ---
 
 <Section
@@ -107,7 +109,7 @@ import Button from "../ui/Button.astro";
         method="POST"
         class="space-y-6"
       >
-        <input type="hidden" name="access_key" value="fa88a037-02c2-4f4f-b44d-b7d920a2ab87" />
+        <input type="hidden" name="access_key" value={accessKey} />
         <input type="hidden" name="redirect" value="https://web3forms.com/success" />
         <div>
           <label for="name" class="block text-sm font-medium mb-1"
