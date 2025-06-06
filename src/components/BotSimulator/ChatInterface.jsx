@@ -1,10 +1,14 @@
 import { useEffect, useRef, useState } from 'react';
 
 const ChatInterface = ({ messages, isTyping }) => {
+  const containerRef = useRef(null);
   const messagesEndRef = useRef(null);
 
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    const container = containerRef.current;
+    if (container) {
+      container.scrollTop = container.scrollHeight;
+    }
   };
 
   useEffect(() => {
@@ -333,7 +337,10 @@ const ChatInterface = ({ messages, isTyping }) => {
   );
 
   return (
-    <div className="flex-1 overflow-y-auto bg-gray-900 scrollbar-thin scrollbar-track-gray-800 scrollbar-thumb-gray-600">
+    <div
+      ref={containerRef}
+      className="flex-1 overflow-y-auto bg-gray-900 scrollbar-thin scrollbar-track-gray-800 scrollbar-thumb-gray-600"
+    >
       <div className="min-h-full">
         {messages.map((message) => (
           <MessageBubble key={message.id} message={message} />
