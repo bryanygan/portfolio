@@ -36,7 +36,7 @@ const ChatInterface = ({ messages, isTyping }) => {
 
     if (inline) {
       return (
-        <code className="bg-gray-900 text-gray-100 px-1.5 py-0.5 rounded text-sm font-mono">
+        <code className="bg-gray-900 text-gray-100 px-1 sm:px-1.5 py-0.5 rounded text-xs sm:text-sm font-mono break-all max-w-full inline-block">
           {children}
         </code>
       );
@@ -44,33 +44,37 @@ const ChatInterface = ({ messages, isTyping }) => {
 
     return (
       <div 
-        className="relative group"
+        className="relative group max-w-full"
         onMouseEnter={() => setShowCopy(true)}
         onMouseLeave={() => setShowCopy(false)}
       >
-        <pre className="bg-gray-900 text-gray-100 p-3 rounded border border-gray-700 overflow-x-auto">
-          <code className="font-mono text-sm whitespace-pre">
-            {children}
-          </code>
-        </pre>
+        <div className="bg-gray-900 border border-gray-700 rounded max-w-full overflow-hidden">
+          <div className="overflow-x-auto max-w-full">
+            <pre className="text-gray-100 p-2 sm:p-3 text-xs sm:text-sm min-w-0">
+              <code className="font-mono whitespace-pre-wrap break-all">
+                {children}
+              </code>
+            </pre>
+          </div>
+        </div>
         {showCopy && (
           <button
             onClick={handleCopy}
-            className="absolute top-2 right-2 bg-gray-700 hover:bg-gray-600 text-white p-1.5 rounded text-xs transition-colors flex items-center gap-1"
+            className="absolute top-1 sm:top-2 right-1 sm:right-2 bg-gray-700 hover:bg-gray-600 text-white p-1 sm:p-1.5 rounded text-xs transition-colors flex items-center gap-1 z-10"
           >
             {copied ? (
               <>
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
-                Copied!
+                <span className="hidden sm:inline">Copied!</span>
               </>
             ) : (
               <>
-                <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-2.5 h-2.5 sm:w-3 sm:h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z" />
                 </svg>
-                Copy
+                <span className="hidden sm:inline">Copy</span>
               </>
             )}
           </button>
@@ -287,10 +291,10 @@ const ChatInterface = ({ messages, isTyping }) => {
     const isBot = message.type === 'bot';
     
     return (
-      <div className={`flex gap-3 p-3 hover:bg-gray-750 ${isBot ? '' : 'bg-gray-800/30'}`}>
+      <div className={`flex gap-2 sm:gap-3 p-2 sm:p-3 hover:bg-gray-750 ${isBot ? '' : 'bg-gray-800/30'} min-w-0`}>
         {/* Avatar */}
         <div className="flex-shrink-0">
-          <div className={`w-10 h-10 rounded-full flex items-center justify-center text-white font-semibold ${
+          <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center text-white font-semibold text-sm sm:text-base ${
             isBot ? 'bg-blue-600' : 'bg-green-600'
           }`}>
             {isBot ? '🤖' : '👤'}
@@ -298,53 +302,53 @@ const ChatInterface = ({ messages, isTyping }) => {
         </div>
         
         {/* Message Content */}
-        <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="font-semibold text-white">
+        <div className="flex-1 min-w-0 max-w-full overflow-hidden">
+          <div className="flex items-center gap-1 sm:gap-2 mb-1 min-w-0">
+            <span className="font-semibold text-white text-sm sm:text-base truncate">
               {isBot ? 'ZR Eats Bot' : 'You'}
             </span>
             {isBot && (
-              <span className="bg-blue-600 text-white text-xs px-1.5 py-0.5 rounded font-medium">
+              <span className="bg-blue-600 text-white text-xs px-1 sm:px-1.5 py-0.5 rounded font-medium flex-shrink-0">
                 BOT
               </span>
             )}
-            <span className="text-gray-400 text-xs">
+            <span className="text-gray-400 text-xs flex-shrink-0">
               {formatTimestamp(message.timestamp)}
             </span>
           </div>
           
           {/* Message Text with formatted code */}
-          <div className="text-gray-100 break-words">
+          <div className="text-gray-100 break-words text-sm sm:text-base min-w-0 max-w-full overflow-hidden">
             {renderContent(message.content)}
           </div>
           
           {/* Embed */}
           {message.embed && (
-            <div className="mt-3 border-l-4 border-blue-500 bg-gray-800 rounded p-4 max-w-lg">
+            <div className="mt-2 sm:mt-3 border-l-4 border-blue-500 bg-gray-800 rounded p-3 sm:p-4 max-w-full min-w-0 overflow-hidden">
               {message.embed.title && (
-                <h3 className="font-semibold text-white mb-2" style={{ color: message.embed.color }}>
+                <h3 className="font-semibold text-white mb-2 text-sm sm:text-base break-words" style={{ color: message.embed.color }}>
                   {message.embed.title}
                 </h3>
               )}
               {message.embed.description && (
-                <div className="text-gray-300 text-sm mb-3">
+                <div className="text-gray-300 text-xs sm:text-sm mb-2 sm:mb-3 break-words min-w-0 max-w-full overflow-hidden">
                   {renderContent(message.embed.description)}
                 </div>
               )}
               {message.embed.fields && message.embed.fields.map((field, index) => (
-                <div key={index} className="mb-3 last:mb-0">
+                <div key={index} className="mb-2 sm:mb-3 last:mb-0 min-w-0 max-w-full overflow-hidden">
                   {field.name && (
-                    <div className="font-semibold text-white text-sm mb-1">
+                    <div className="font-semibold text-white text-xs sm:text-sm mb-1 break-words">
                       {field.name}
                     </div>
                   )}
-                  <div className="text-gray-300 text-sm">
+                  <div className="text-gray-300 text-xs sm:text-sm break-words min-w-0 max-w-full overflow-hidden">
                     {renderContent(field.value)}
                   </div>
                 </div>
               ))}
               {message.embed.footer && (
-                <div className="text-gray-400 text-xs mt-3 pt-2 border-t border-gray-700">
+                <div className="text-gray-400 text-xs mt-2 sm:mt-3 pt-2 border-t border-gray-700 break-words">
                   {message.embed.footer}
                 </div>
               )}
@@ -356,26 +360,26 @@ const ChatInterface = ({ messages, isTyping }) => {
   };
 
   const TypingIndicator = () => (
-    <div className="flex gap-3 p-3">
+    <div className="flex gap-2 sm:gap-3 p-2 sm:p-3">
       <div className="flex-shrink-0">
-        <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold">
+        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-semibold text-sm sm:text-base">
           🤖
         </div>
       </div>
       <div className="flex-1 min-w-0">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="font-semibold text-white">ZR Eats Bot</span>
-          <span className="bg-blue-600 text-white text-xs px-1.5 py-0.5 rounded font-medium">
+        <div className="flex items-center gap-1 sm:gap-2 mb-1">
+          <span className="font-semibold text-white text-sm sm:text-base">ZR Eats Bot</span>
+          <span className="bg-blue-600 text-white text-xs px-1 sm:px-1.5 py-0.5 rounded font-medium">
             BOT
           </span>
         </div>
         <div className="flex items-center gap-1 text-gray-400">
           <div className="flex gap-1">
-            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
-            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-            <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
+            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce"></div>
+            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
+            <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
           </div>
-          <span className="text-sm ml-2">is typing...</span>
+          <span className="text-xs sm:text-sm ml-2">is typing...</span>
         </div>
       </div>
     </div>
@@ -384,7 +388,7 @@ const ChatInterface = ({ messages, isTyping }) => {
   return (
     <div
       ref={containerRef}
-      className="flex-1 overflow-y-auto bg-gray-900 scrollbar-thin scrollbar-track-gray-800 scrollbar-thumb-gray-600"
+      className="flex-1 overflow-y-auto bg-gray-900 scrollbar-thin scrollbar-track-gray-800 scrollbar-thumb-gray-600 min-h-0"
     >
       <div className="min-h-full">
         {messages.map((message) => (

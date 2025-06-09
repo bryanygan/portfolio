@@ -146,22 +146,22 @@ const CommandInput = ({ onCommand, isProcessing }) => {
   }, [showSuggestions, filteredCommands.length]);
 
   return (
-    <div className="relative bg-gray-800 border-t border-gray-700">
+    <div className="relative bg-gray-800 border-t border-gray-700 flex-shrink-0">
       {/* Command Suggestions */}
       {showSuggestions && filteredCommands.length > 0 && (
-        <div className="absolute bottom-full left-0 right-0 bg-gray-800 border border-gray-600 rounded-t-lg shadow-lg max-h-64 overflow-y-auto">
+        <div className="absolute bottom-full left-0 right-0 bg-gray-800 border border-gray-600 rounded-t-lg shadow-lg max-h-48 sm:max-h-64 overflow-y-auto z-10">
           {filteredCommands.map((command, index) => (
             <div
               key={command.name}
-              className={`p-3 cursor-pointer border-b border-gray-700 last:border-b-0 ${
+              className={`p-2 sm:p-3 cursor-pointer border-b border-gray-700 last:border-b-0 ${
                 index === selectedSuggestion ? 'bg-blue-600' : 'hover:bg-gray-700'
               }`}
               onClick={() => insertCommand(command)}
             >
-              <div className="font-medium text-white">{command.name}</div>
-              <div className="text-sm text-gray-300">{command.description}</div>
+              <div className="font-medium text-white text-sm sm:text-base">{command.name}</div>
+              <div className="text-xs sm:text-sm text-gray-300 mt-1">{command.description}</div>
               {command.params && (
-                <div className="text-xs text-gray-400 mt-1">
+                <div className="text-xs text-gray-400 mt-1 truncate">
                   Example: {command.name} {command.params}
                 </div>
               )}
@@ -171,8 +171,8 @@ const CommandInput = ({ onCommand, isProcessing }) => {
       )}
 
       {/* Input Form */}
-      <div className="p-4">
-        <div className="flex gap-3 items-end">
+      <div className="p-2 sm:p-4">
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-end">
           <div className="flex-1 relative">
             <input
               ref={inputRef}
@@ -185,12 +185,12 @@ const CommandInput = ({ onCommand, isProcessing }) => {
               }}
               placeholder="Type a command (start with /) or message..."
               disabled={isProcessing}
-              className="w-full bg-gray-700 text-white rounded-lg px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-gray-700 text-white rounded-lg px-3 sm:px-4 py-2 sm:py-3 text-sm sm:text-base focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
             />
             
             {/* Command indicator */}
             {input.startsWith('/') && (
-              <div className="absolute right-3 top-1/2 transform -translate-y-1/2 text-xs text-gray-400">
+              <div className="absolute right-2 sm:right-3 top-1/2 transform -translate-y-1/2 text-xs text-gray-400 hidden sm:block">
                 Press Tab to autocomplete
               </div>
             )}
@@ -200,33 +200,33 @@ const CommandInput = ({ onCommand, isProcessing }) => {
             type="button"
             disabled={!input.trim() || isProcessing}
             onClick={handleSubmit}
-            className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-6 py-3 rounded-lg font-medium transition-colors flex items-center gap-2"
+            className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-sm sm:text-base min-w-[80px] sm:min-w-[100px]"
           >
             {isProcessing ? (
               <>
-                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                Processing...
+                <div className="w-3 h-3 sm:w-4 sm:h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                <span className="hidden sm:inline">Processing...</span>
               </>
             ) : (
               <>
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <svg className="w-3 h-3 sm:w-4 sm:h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
                 </svg>
-                Send
+                <span className="hidden sm:inline">Send</span>
               </>
             )}
           </button>
         </div>
         
         {/* Quick Commands */}
-        <div className="mt-3 flex flex-wrap gap-2">
-          <span className="text-xs text-gray-400">Quick commands:</span>
+        <div className="mt-2 sm:mt-3 flex flex-wrap gap-1 sm:gap-2">
+          <span className="text-xs text-gray-400 mb-1 sm:mb-0">Quick commands:</span>
           {['/help', '/payments', '/wool_details', '/fusion_assist'].map(cmd => (
             <button
               key={cmd}
               type="button"
               onClick={() => setInput(cmd)}
-              className="text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 px-2 py-1 rounded transition-colors"
+              className="text-xs bg-gray-700 hover:bg-gray-600 text-gray-300 px-2 py-1 rounded transition-colors truncate"
             >
               {cmd}
             </button>

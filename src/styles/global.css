@@ -27,3 +27,210 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   @apply bg-gray-400 dark:bg-gray-600;
 } 
+/* Custom scrollbar for better mobile experience */
+.scrollbar-thin {
+  scrollbar-width: thin;
+}
+
+.scrollbar-track-gray-800 {
+  scrollbar-color: #374151 #1f2937;
+}
+
+.scrollbar-thumb-gray-600 {
+  scrollbar-color: #4b5563 #1f2937;
+}
+
+/* Prevent horizontal overflow in bot simulator */
+.bot-simulator-container,
+.bot-simulator-container * {
+  box-sizing: border-box;
+}
+
+/* Force proper text wrapping in code blocks and embeds */
+.break-all {
+  word-break: break-all;
+  overflow-wrap: anywhere;
+  hyphens: auto;
+}
+
+/* Ensure containers don't overflow */
+.max-w-full {
+  max-width: 100% !important;
+}
+
+.min-w-0 {
+  min-width: 0 !important;
+}
+
+.overflow-hidden {
+  overflow: hidden !important;
+}
+
+/* Mobile-specific adjustments */
+@media (max-width: 640px) {
+  /* Improve touch targets for mobile */
+  button, 
+  [role="button"],
+  input[type="submit"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Prevent zoom on input focus on iOS */
+  input[type="text"],
+  input[type="email"],
+  input[type="tel"],
+  textarea {
+    font-size: 16px;
+  }
+  
+  /* Better spacing for mobile */
+  .container {
+    padding-left: 0.5rem;
+    padding-right: 0.5rem;
+  }
+  
+  /* Force proper text wrapping on mobile */
+  pre {
+    white-space: pre-wrap !important;
+    word-break: break-all !important;
+    overflow-wrap: anywhere !important;
+  }
+  
+  code {
+    white-space: pre-wrap !important;
+    word-break: break-all !important;
+    overflow-wrap: anywhere !important;
+  }
+}
+
+/* Tablet adjustments */
+@media (min-width: 641px) and (max-width: 1024px) {
+  /* Optimize for tablet view */
+  .bot-simulator-container {
+    max-width: 100%;
+    margin: 0 auto;
+  }
+}
+
+/* Ensure proper scaling on very small screens */
+@media (max-width: 360px) {
+  .text-xs {
+    font-size: 0.6875rem;
+  }
+  
+  .text-sm {
+    font-size: 0.8125rem;
+  }
+  
+  .p-2 {
+    padding: 0.375rem;
+  }
+  
+  .gap-2 {
+    gap: 0.375rem;
+  }
+  
+  /* Extra aggressive text wrapping for very small screens */
+  * {
+    word-break: break-word !important;
+    overflow-wrap: anywhere !important;
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  /* Ensure crisp text rendering */
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Landscape orientation on mobile */
+@media (max-width: 896px) and (orientation: landscape) {
+  /* Reduce vertical padding in landscape mode */
+  .pt-20,
+  .pt-24,
+  .pt-32 {
+    padding-top: 1rem !important;
+  }
+  
+  .pb-8,
+  .pb-12,
+  .pb-20 {
+    padding-bottom: 1rem !important;
+  }
+  
+  /* Optimize chat height for landscape */
+  .h-\[50vh\] {
+    height: 60vh !important;
+  }
+}
+
+/* Focus styles for better accessibility */
+button:focus-visible,
+input:focus-visible,
+[role="button"]:focus-visible {
+  outline: 2px solid #3b82f6;
+  outline-offset: 2px;
+}
+
+/* Smooth transitions for responsive changes */
+* {
+  transition: padding 0.2s ease, margin 0.2s ease, font-size 0.2s ease;
+}
+
+/* Prevent horizontal scrolling on mobile */
+body {
+  overflow-x: hidden;
+}
+
+html {
+  overflow-x: hidden;
+}
+
+/* Improve readability on small screens */
+@media (max-width: 480px) {
+  .break-all {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+  
+  .truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+  }
+}
+
+/* Specific fixes for Discord bot simulator */
+.bot-simulator-chat {
+  width: 100%;
+  max-width: 100%;
+  overflow: hidden;
+}
+
+.bot-simulator-message {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+.bot-simulator-embed {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.bot-simulator-code {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-all;
+  overflow-wrap: anywhere;
+}
