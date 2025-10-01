@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
-const ChatInterface = ({ messages, isTyping }) => {
+const ChatInterface = ({ messages, isTyping, onButtonClick }) => {
   const containerRef = useRef(null);
   const messagesEndRef = useRef(null);
 
@@ -350,6 +350,25 @@ const ChatInterface = ({ messages, isTyping }) => {
               {message.embed.footer && (
                 <div className="text-gray-400 text-xs mt-2 sm:mt-3 pt-2 border-t border-gray-700 break-words">
                   {message.embed.footer}
+                </div>
+              )}
+              {message.embed.buttons && message.embed.buttons.length > 0 && (
+                <div className="flex gap-2 mt-3">
+                  {message.embed.buttons.map((button, index) => (
+                    <button
+                      key={index}
+                      onClick={() => onButtonClick?.(button.action, button)}
+                      className={`px-3 py-2 rounded text-sm font-medium transition-colors ${
+                        button.style === 'success'
+                          ? 'bg-green-600 hover:bg-green-700 text-white'
+                          : button.style === 'danger'
+                          ? 'bg-red-600 hover:bg-red-700 text-white'
+                          : 'bg-blue-600 hover:bg-blue-700 text-white'
+                      }`}
+                    >
+                      {button.label}
+                    </button>
+                  ))}
                 </div>
               )}
             </div>

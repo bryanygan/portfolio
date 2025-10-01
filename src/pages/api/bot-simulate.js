@@ -48,8 +48,12 @@ export async function POST({ request }) {
     let embed = null;
     let updatedPools = null;
 
-    switch (commandName) {
-      case '/fusion_assist':
+    // Handle button interactions first
+    if (commandName === 'z_confirm' || commandName === 'z_cancel') {
+      ({ response, embed } = handleZButtonClick(commandName, params, userId));
+    } else {
+      switch (commandName) {
+        case '/fusion_assist':
         ({ response, embed, updatedPools } = await handleFusionAssist(params, pools));
         break;
 
@@ -105,6 +109,7 @@ export async function POST({ request }) {
 
       default:
         response = `❌ Unknown command: ${commandName}\n\nAvailable commands:\n• \`/fusion_assist\`\n• \`/fusion_order\`\n• \`/wool_order\`\n• \`/pump_order\`\n• \`/reorder\`\n• \`/z\`\n• \`/vcc\`\n• \`/payments\`\n• \`/add_card\`\n• \`/add_email\`\n• \`/open\`\n• \`/close\`\n• \`/break\`\n• \`/help\``;
+      }
     }
 
     return new Response(JSON.stringify({
@@ -522,6 +527,53 @@ function handleReorder(params, userId) {
     response: '✅ Reorder command generated!',
     embed
   };
+}
+
+function handleZButtonClick(action, params, userId) {
+  if (!isAuthorized(userId)) {
+    return {
+      response: '❌ You are not authorized.',
+      embed: null
+    };
+  }
+
+  if (action === 'z_confirm') {
+    // Parse values from stored order data
+    const subtotal = 20.70;
+    const deliveryFee = 0.00;
+    const taxesFees = 1.97;
+    const originalTotal = subtotal + deliveryFee + taxesFees + 3.49; // 3.49 is Uber service fee
+    const newTotal = 8.97; // Final calculated total
+
+    // Cart items for display
+    const cartItems = [
+      '• Pumpkin Cream Cheese Muffin (x1) - $4.95',
+      '• Mango Dragonfruit Lemonade Refresher (x1) - $8.60',
+      '• Caffè Mocha (x1) - $7.15'
+    ];
+
+    const breakdownEmbed = {
+      title: 'Order Breakdown:',
+      color: '#00ff00',
+      description: `**Cart Items:**\n${cartItems.join('\n')}\n\n` +
+                  `Your original total + taxes + Uber fees: $${originalTotal.toFixed(2)}\n\n` +
+                  `Promo Discount + Service Fee successfully applied!\n\n` +
+                  `Tip amount: $0.00\n\n` +
+                  `**Your new total: $${newTotal.toFixed(2)}**`
+    };
+
+    return {
+      response: '✅ Order confirmed and processed!',
+      embed: breakdownEmbed
+    };
+  }
+
+  if (action === 'z_cancel') {
+    return {
+      response: '❌ Order cancelled.',
+      embed: null
+    };
+  }
 }
 
 function handleZCommand(params, userId) {

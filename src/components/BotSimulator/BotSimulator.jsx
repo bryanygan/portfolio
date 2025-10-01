@@ -22,6 +22,47 @@ const BotSimulator = () => {
     }
   });
 
+  const handleButtonClick = async (action, button) => {
+    setIsTyping(true);
+
+    try {
+      const response = await fetch('/api/bot-simulate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ command: action, params: {}, pools })
+      });
+
+      const result = await response.json();
+
+      // Add bot response
+      const botMessage = {
+        id: Date.now() + 1,
+        type: 'bot',
+        content: result.response,
+        embed: result.embed,
+        timestamp: new Date(),
+      };
+
+      setMessages(prev => [...prev, botMessage]);
+
+      // Update pools if changed
+      if (result.updatedPools) {
+        setPools(result.updatedPools);
+      }
+
+    } catch (error) {
+      const errorMessage = {
+        id: Date.now() + 1,
+        type: 'bot',
+        content: '❌ Error processing button click. Please try again.',
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    }
+
+    setIsTyping(false);
+  };
+
   const simulateCommand = async (command, params = {}) => {
     // Format the full command with parameters for display
     let fullCommand = command;
@@ -109,8 +150,8 @@ const BotSimulator = () => {
         <div className="flex flex-row flex-1 min-h-0 overflow-hidden">
           {/* Main Chat - Full width on mobile, shared on desktop */}
           <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-            <ChatInterface messages={messages} isTyping={isTyping} />
-            <CommandInput onCommand={simulateCommand} />
+            <ChatInterface messages={messages} isTyping={isTyping} onButtonClick={handleButtonClick} />
+            <CommandInput onCommand={simulateCommand} isProcessing={isTyping} />
           </div>
 
           {/* Desktop Sidebar - Pool Status */}
