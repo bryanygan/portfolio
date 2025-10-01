@@ -14,7 +14,7 @@ const CommandInput = ({ onCommand, isProcessing }) => {
       params: 'mode:UberEats email:custom@example.com'
     },
     {
-      name: '/fusion_order', 
+      name: '/fusion_order',
       description: 'Generate Fusion order with email and card pools',
       params: 'custom_email:example@gmail.com'
     },
@@ -22,6 +22,31 @@ const CommandInput = ({ onCommand, isProcessing }) => {
       name: '/wool_order',
       description: 'Generate Wool order format',
       params: 'custom_email:example@gmail.com'
+    },
+    {
+      name: '/wool_details',
+      description: 'Show parsed Wool order details',
+      params: ''
+    },
+    {
+      name: '/pump_order',
+      description: 'Generate Pump order with pump pool email',
+      params: 'pool:pump_20off25 custom_email:test@pump.com card_number:1234567890123456 card_cvv:123'
+    },
+    {
+      name: '/reorder',
+      description: 'Format a reorder command with email only (Admin)',
+      params: 'email:user@example.com'
+    },
+    {
+      name: '/z',
+      description: 'Parse order information and display breakdown (Admin)',
+      params: 'order_text:"CART ITEMS: • Item (x1) - $5.00" vip:true service_fee:6.00'
+    },
+    {
+      name: '/vcc',
+      description: 'Pull a card from the pool in order format (Admin)',
+      params: ''
     },
     {
       name: '/payments',
@@ -35,8 +60,8 @@ const CommandInput = ({ onCommand, isProcessing }) => {
     },
     {
       name: '/add_email',
-      description: 'Add email to pool (Admin)', 
-      params: 'email:test@example.com top:true'
+      description: 'Add email to pool (Admin)',
+      params: 'email:test@example.com pool:main top:true'
     },
     {
       name: '/open',
@@ -46,6 +71,11 @@ const CommandInput = ({ onCommand, isProcessing }) => {
     {
       name: '/close',
       description: 'Close the channel',
+      params: ''
+    },
+    {
+      name: '/break',
+      description: 'Put the channel on hold',
       params: ''
     },
     {
@@ -221,7 +251,7 @@ const CommandInput = ({ onCommand, isProcessing }) => {
         {/* Quick Commands */}
         <div className="mt-2 sm:mt-3 flex flex-wrap gap-1 sm:gap-2">
           <span className="text-xs text-gray-400 mb-1 sm:mb-0">Quick commands:</span>
-          {['/help', '/payments', '/wool_details', '/fusion_assist'].map(cmd => (
+          {['/help', '/payments', '/wool_details', '/fusion_assist', '/pump_order', '/vcc'].map(cmd => (
             <button
               key={cmd}
               type="button"

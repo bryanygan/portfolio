@@ -14,15 +14,28 @@ const BotSimulator = () => {
   const [isTyping, setIsTyping] = useState(false);
   const [pools, setPools] = useState({
     cards: ['3856273926573829,123', '3948374615728453,456'],
-    emails: ['user1@example.com', 'user2@example.com']
+    emails: {
+      main: ['user1@example.com', 'user2@example.com'],
+      pump_20off25: ['pump1@20off.com', 'pump2@20off.com'],
+      pump_25off: ['pump1@25off.com']
+    }
   });
 
   const simulateCommand = async (command, params = {}) => {
-    // Add user message
+    // Format the full command with parameters for display
+    let fullCommand = command;
+    if (Object.keys(params).length > 0) {
+      const paramString = Object.entries(params)
+        .map(([key, value]) => `${key}:${value}`)
+        .join(' ');
+      fullCommand = `${command} ${paramString}`;
+    }
+
+    // Add user message with full command
     const userMessage = {
       id: Date.now(),
       type: 'user',
-      content: command,
+      content: fullCommand,
       timestamp: new Date(),
     };
     setMessages(prev => [...prev, userMessage]);
@@ -124,19 +137,26 @@ const BotSimulator = () => {
               </div>
               <div>
                 <p className="text-gray-400 text-xs sm:text-sm">
-                  Emails: {pools.emails.length}
+                  Email Pools:
                 </p>
-                <div className="bg-gray-800 rounded p-2 text-xs text-gray-300 mt-1 overflow-hidden">
-                  {pools.emails.slice(0, 2).map((email, i) => (
-                    <div key={i} className="truncate" title={email}>
-                      {email}
+                <div className="bg-gray-800 rounded p-2 text-xs text-gray-300 mt-1 overflow-hidden space-y-1">
+                  {Object.entries(pools.emails).map(([poolName, emailArray]) => (
+                    <div key={poolName}>
+                      <div className="text-gray-400 font-semibold">
+                        {poolName}: {emailArray.length}
+                      </div>
+                      {emailArray.slice(0, 1).map((email, i) => (
+                        <div key={i} className="truncate text-gray-300 ml-2" title={email}>
+                          {email}
+                        </div>
+                      ))}
+                      {emailArray.length > 1 && (
+                        <div className="text-gray-500 ml-2">
+                          +{emailArray.length - 1} more
+                        </div>
+                      )}
                     </div>
                   ))}
-                  {pools.emails.length > 2 && (
-                    <div className="text-gray-500">
-                      +{pools.emails.length - 2} more
-                    </div>
-                  )}
                 </div>
               </div>
             </div>
