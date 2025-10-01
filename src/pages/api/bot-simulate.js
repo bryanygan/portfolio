@@ -107,6 +107,24 @@ export async function POST({ request }) {
         ({ response, embed } = handleHelp());
         break;
 
+      case '/bulk_cards':
+        ({ response, embed, updatedPools } = handleBulkCards(params, pools, userId));
+        break;
+
+      case '/bulk_emails_main':
+      case '/bulk_emails_pump20':
+      case '/bulk_emails_pump25':
+        ({ response, embed, updatedPools } = handleBulkEmails(commandName, params, pools, userId));
+        break;
+
+      case '/remove_bulk_cards':
+        ({ response, embed, updatedPools } = handleRemoveBulkCards(params, pools, userId));
+        break;
+
+      case '/remove_bulk_emails':
+        ({ response, embed, updatedPools } = handleRemoveBulkEmails(params, pools, userId));
+        break;
+
       default:
         response = `❌ Unknown command: ${commandName}\n\nAvailable commands:\n• \`/fusion_assist\`\n• \`/fusion_order\`\n• \`/wool_order\`\n• \`/pump_order\`\n• \`/reorder\`\n• \`/z\`\n• \`/vcc\`\n• \`/payments\`\n• \`/add_card\`\n• \`/add_email\`\n• \`/open\`\n• \`/close\`\n• \`/break\`\n• \`/help\``;
       }
@@ -921,7 +939,7 @@ function handleHelp() {
       },
       {
         name: '⚙️ Admin Commands',
-        value: '```\n/add_card number:1234... cvv:123\n/add_email email:test@example.com pool:main\n/open\n/close\n/break\n```\nManage pools and channel status'
+        value: '```\n/add_card number:1234... cvv:123\n/add_email email:test@example.com pool:main\n/bulk_cards data:"card,cvv"\n/bulk_emails_main data:"emails"\n/remove_bulk_cards data:"card,cvv"\n/open\n/close\n/break\n```\nManage pools and channel status'
       },
       {
         name: '📝 Examples',
@@ -968,5 +986,565 @@ function handleWoolDetails() {
   return {
     response: '📋 Wool order details parsed and displayed!',
     embed
+  };
+}
+
+// ===== VALIDATION FUNCTIONS =====
+
+// Luhn algorithm for card validation
+function validateCardNumber(cardNumber) {
+  const cleanNumber = cardNumber.replace(/[\s-]/g, '');
+
+  if (!/^\d+$/.test(cleanNumber)) {
+    return { valid: false, error: 'Card number must contain only digits' };
+  }
+
+  if (cleanNumber.length < 13 || cleanNumber.length > 19) {
+    return { valid: false, error: 'Card number must be 13-19 digits long' };
+  }
+
+  // Luhn algorithm
+  let sum = 0;
+  let isEven = false;
+
+  for (let i = cleanNumber.length - 1; i >= 0; i--) {
+    let digit = parseInt(cleanNumber[i]);
+
+    if (isEven) {
+      digit *= 2;
+      if (digit > 9) {
+        digit -= 9;
+      }
+    }
+
+    sum += digit;
+    isEven = !isEven;
+  }
+
+  if (sum % 10 !== 0) {
+    return { valid: false, error: 'Invalid card number (failed Luhn check)' };
+  }
+
+  return { valid: true, cleanNumber };
+}
+
+function validateCVV(cvv, cardNumber) {
+  const cleanCVV = cvv.replace(/\s/g, '');
+
+  if (!/^\d+$/.test(cleanCVV)) {
+    return { valid: false, error: 'CVV must contain only digits' };
+  }
+
+  // American Express cards start with 34 or 37 and have 4-digit CVV
+  const isAmex = cardNumber && (cardNumber.startsWith('34') || cardNumber.startsWith('37'));
+  const expectedLength = isAmex ? 4 : 3;
+
+  if (cleanCVV.length !== expectedLength) {
+    return { valid: false, error: `CVV must be ${expectedLength} digits for this card type` };
+  }
+
+  return { valid: true, cleanCVV };
+}
+
+function validateEmail(email) {
+  if (!email || typeof email !== 'string') {
+    return { valid: false, error: 'Email is required' };
+  }
+
+  const cleanEmail = email.trim().toLowerCase();
+
+  if (cleanEmail.length < 5) {
+    return { valid: false, error: 'Email too short' };
+  }
+
+  if (!cleanEmail.includes('@')) {
+    return { valid: false, error: 'Email must contain @' };
+  }
+
+  const parts = cleanEmail.split('@');
+  if (parts.length !== 2 || !parts[0] || !parts[1]) {
+    return { valid: false, error: 'Invalid email format' };
+  }
+
+  if (!parts[1].includes('.')) {
+    return { valid: false, error: 'Email domain must contain a dot' };
+  }
+
+  return { valid: true, cleanEmail };
+}
+
+// ===== BULK COMMAND HANDLERS =====
+
+function handleBulkCards(params, pools, userId) {
+  if (!isAuthorized(userId)) {
+    return {
+      response: '❌ You are not authorized.',
+      embed: null,
+      updatedPools: pools
+    };
+  }
+
+  if (!params.file) {
+    return {
+      response: '❌ No file provided. Please upload a .txt or .csv file containing card data.',
+      embed: null,
+      updatedPools: pools
+    };
+  }
+
+  const { file } = params;
+  const fileName = file.name || '';
+  const isCSV = fileName.toLowerCase().endsWith('.csv');
+  const fileContent = file.content || '';
+
+  let lines = fileContent.split('\n').map(line => line.trim()).filter(line => line);
+
+  // Skip header for CSV
+  if (isCSV && lines.length > 1 && lines[0].toLowerCase().includes('card')) {
+    lines = lines.slice(1);
+  }
+
+  const results = {
+    added: 0,
+    duplicates: 0,
+    invalid: [],
+    total: lines.length
+  };
+
+  const updatedPools = { ...pools, cards: [...pools.cards] };
+
+  lines.forEach((line, index) => {
+    let cardNumber, cvv;
+
+    if (isCSV) {
+      // CSV format: card at column 6 (index 5), CVV at column 9 (index 8)
+      const columns = line.split(',').map(col => col.trim().replace(/"/g, ''));
+      if (columns.length < 9) {
+        results.invalid.push(`Line ${index + 1}: Insufficient columns in CSV`);
+        return;
+      }
+      cardNumber = columns[5];
+      cvv = columns[8];
+    } else {
+      // Text format: cardNumber,cvv
+      const parts = line.split(',');
+      if (parts.length !== 2) {
+        results.invalid.push(`Line ${index + 1}: Expected format 'cardNumber,cvv'`);
+        return;
+      }
+      cardNumber = parts[0].trim();
+      cvv = parts[1].trim();
+    }
+
+    // Validate card number
+    const cardValidation = validateCardNumber(cardNumber);
+    if (!cardValidation.valid) {
+      results.invalid.push(`Line ${index + 1}: ${cardValidation.error}`);
+      return;
+    }
+
+    // Validate CVV
+    const cvvValidation = validateCVV(cvv, cardValidation.cleanNumber);
+    if (!cvvValidation.valid) {
+      results.invalid.push(`Line ${index + 1}: ${cvvValidation.error}`);
+      return;
+    }
+
+    // Check for duplicates
+    const cardEntry = `${cardValidation.cleanNumber},${cvvValidation.cleanCVV}`;
+    if (updatedPools.cards.includes(cardEntry)) {
+      results.duplicates++;
+      return;
+    }
+
+    // Add to pool
+    updatedPools.cards.push(cardEntry);
+    results.added++;
+  });
+
+  // Create response embed
+  const embed = {
+    title: '💳 Bulk Cards Import Results',
+    color: results.added > 0 ? '#00ff00' : '#ff6600',
+    fields: [
+      { name: 'Total Processed', value: results.total.toString(), inline: true },
+      { name: 'Successfully Added', value: results.added.toString(), inline: true },
+      { name: 'Duplicates Skipped', value: results.duplicates.toString(), inline: true },
+      { name: 'Invalid Lines', value: results.invalid.length.toString(), inline: true },
+      { name: 'Cards in Pool', value: updatedPools.cards.length.toString(), inline: true }
+    ]
+  };
+
+  if (results.invalid.length > 0) {
+    const errorList = results.invalid.slice(0, 10).join('\n');
+    const moreErrors = results.invalid.length > 10 ? `\n... and ${results.invalid.length - 10} more errors` : '';
+    embed.fields.push({
+      name: 'Error Details',
+      value: `\`\`\`\n${errorList}${moreErrors}\`\`\``,
+      inline: false
+    });
+  }
+
+  const response = results.added > 0
+    ? `✅ Successfully processed bulk cards import!`
+    : results.invalid.length > 0
+    ? `⚠️ Bulk cards import completed with errors.`
+    : `❌ No valid cards found to import.`;
+
+  return {
+    response,
+    embed,
+    updatedPools
+  };
+}
+
+function handleBulkEmails(commandName, params, pools, userId) {
+  if (!isAuthorized(userId)) {
+    return {
+      response: '❌ You are not authorized.',
+      embed: null,
+      updatedPools: pools
+    };
+  }
+
+  if (!params.file) {
+    return {
+      response: '❌ No file provided. Please upload a .txt file containing email addresses.',
+      embed: null,
+      updatedPools: pools
+    };
+  }
+
+  // Determine target pool from command name
+  let targetPool;
+  switch (commandName) {
+    case '/bulk_emails_main':
+      targetPool = 'main';
+      break;
+    case '/bulk_emails_pump20':
+      targetPool = 'pump_20off25';
+      break;
+    case '/bulk_emails_pump25':
+      targetPool = 'pump_25off';
+      break;
+    default:
+      return {
+        response: '❌ Invalid bulk email command.',
+        embed: null,
+        updatedPools: pools
+      };
+  }
+
+  pools = normalizeEmailPools(pools);
+  const fileContent = params.file.content || '';
+  const lines = fileContent.split('\n').map(line => line.trim()).filter(line => line);
+
+  const results = {
+    added: 0,
+    duplicates: 0,
+    invalid: [],
+    total: lines.length,
+    pool: targetPool
+  };
+
+  const updatedPools = {
+    ...pools,
+    emails: {
+      ...pools.emails,
+      [targetPool]: [...pools.emails[targetPool] || []]
+    }
+  };
+
+  lines.forEach((line, index) => {
+    const emailValidation = validateEmail(line);
+
+    if (!emailValidation.valid) {
+      results.invalid.push(`Line ${index + 1}: ${emailValidation.error}`);
+      return;
+    }
+
+    // Check for duplicates
+    if (updatedPools.emails[targetPool].includes(emailValidation.cleanEmail)) {
+      results.duplicates++;
+      return;
+    }
+
+    // Add to pool
+    updatedPools.emails[targetPool].push(emailValidation.cleanEmail);
+    results.added++;
+  });
+
+  // Create response embed
+  const embed = {
+    title: `📧 Bulk Emails Import Results (${targetPool} pool)`,
+    color: results.added > 0 ? '#00ff00' : '#ff6600',
+    fields: [
+      { name: 'Total Processed', value: results.total.toString(), inline: true },
+      { name: 'Successfully Added', value: results.added.toString(), inline: true },
+      { name: 'Duplicates Skipped', value: results.duplicates.toString(), inline: true },
+      { name: 'Invalid Lines', value: results.invalid.length.toString(), inline: true },
+      { name: `Emails in ${targetPool} Pool`, value: updatedPools.emails[targetPool].length.toString(), inline: true }
+    ]
+  };
+
+  if (results.invalid.length > 0) {
+    const errorList = results.invalid.slice(0, 10).join('\n');
+    const moreErrors = results.invalid.length > 10 ? `\n... and ${results.invalid.length - 10} more errors` : '';
+    embed.fields.push({
+      name: 'Error Details',
+      value: `\`\`\`\n${errorList}${moreErrors}\`\`\``,
+      inline: false
+    });
+  }
+
+  const response = results.added > 0
+    ? `✅ Successfully processed bulk emails import!`
+    : results.invalid.length > 0
+    ? `⚠️ Bulk emails import completed with errors.`
+    : `❌ No valid emails found to import.`;
+
+  return {
+    response,
+    embed,
+    updatedPools
+  };
+}
+
+function handleRemoveBulkCards(params, pools, userId) {
+  if (!isAuthorized(userId)) {
+    return {
+      response: '❌ You are not authorized.',
+      embed: null,
+      updatedPools: pools
+    };
+  }
+
+  if (!params.file) {
+    return {
+      response: '❌ No file provided. Please upload a .txt file containing card data to remove.',
+      embed: null,
+      updatedPools: pools
+    };
+  }
+
+  const fileContent = params.file.content || '';
+  const lines = fileContent.split('\n').map(line => line.trim()).filter(line => line);
+
+  const results = {
+    removed: 0,
+    notFound: 0,
+    invalid: [],
+    total: lines.length
+  };
+
+  const updatedPools = { ...pools, cards: [...pools.cards] };
+
+  lines.forEach((line, index) => {
+    const parts = line.split(',');
+    if (parts.length !== 2) {
+      results.invalid.push(`Line ${index + 1}: Expected format 'cardNumber,cvv'`);
+      return;
+    }
+
+    const cardNumber = parts[0].trim();
+    const cvv = parts[1].trim();
+
+    // Validate card number
+    const cardValidation = validateCardNumber(cardNumber);
+    if (!cardValidation.valid) {
+      results.invalid.push(`Line ${index + 1}: ${cardValidation.error}`);
+      return;
+    }
+
+    // Validate CVV
+    const cvvValidation = validateCVV(cvv, cardValidation.cleanNumber);
+    if (!cvvValidation.valid) {
+      results.invalid.push(`Line ${index + 1}: ${cvvValidation.error}`);
+      return;
+    }
+
+    // Look for exact match
+    const cardEntry = `${cardValidation.cleanNumber},${cvvValidation.cleanCVV}`;
+    const cardIndex = updatedPools.cards.indexOf(cardEntry);
+
+    if (cardIndex === -1) {
+      results.notFound++;
+      return;
+    }
+
+    // Remove from pool
+    updatedPools.cards.splice(cardIndex, 1);
+    results.removed++;
+  });
+
+  // Create response embed
+  const embed = {
+    title: '💳 Bulk Cards Removal Results',
+    color: results.removed > 0 ? '#00ff00' : '#ff6600',
+    fields: [
+      { name: 'Total Processed', value: results.total.toString(), inline: true },
+      { name: 'Successfully Removed', value: results.removed.toString(), inline: true },
+      { name: 'Not Found', value: results.notFound.toString(), inline: true },
+      { name: 'Invalid Lines', value: results.invalid.length.toString(), inline: true },
+      { name: 'Cards Remaining', value: updatedPools.cards.length.toString(), inline: true }
+    ]
+  };
+
+  if (results.invalid.length > 0) {
+    const errorList = results.invalid.slice(0, 10).join('\n');
+    const moreErrors = results.invalid.length > 10 ? `\n... and ${results.invalid.length - 10} more errors` : '';
+    embed.fields.push({
+      name: 'Error Details',
+      value: `\`\`\`\n${errorList}${moreErrors}\`\`\``,
+      inline: false
+    });
+  }
+
+  const response = results.removed > 0
+    ? `✅ Successfully processed bulk cards removal!`
+    : results.invalid.length > 0
+    ? `⚠️ Bulk cards removal completed with errors.`
+    : `❌ No valid cards found to remove.`;
+
+  return {
+    response,
+    embed,
+    updatedPools
+  };
+}
+
+function handleRemoveBulkEmails(params, pools, userId) {
+  if (!isAuthorized(userId)) {
+    return {
+      response: '❌ You are not authorized.',
+      embed: null,
+      updatedPools: pools
+    };
+  }
+
+  if (!params.file) {
+    return {
+      response: '❌ No file provided. Please upload a .txt file containing email addresses to remove.',
+      embed: null,
+      updatedPools: pools
+    };
+  }
+
+  const targetPool = params.pool || 'all';
+  const validPools = ['all', 'main', 'pump_20off25', 'pump_25off'];
+
+  if (!validPools.includes(targetPool)) {
+    return {
+      response: `❌ Invalid pool. Must be one of: ${validPools.join(', ')}`,
+      embed: null,
+      updatedPools: pools
+    };
+  }
+
+  pools = normalizeEmailPools(pools);
+  const fileContent = params.file.content || '';
+  const lines = fileContent.split('\n').map(line => line.trim()).filter(line => line);
+
+  const results = {
+    removed: 0,
+    notFound: 0,
+    invalid: [],
+    total: lines.length,
+    pool: targetPool
+  };
+
+  const updatedPools = {
+    ...pools,
+    emails: {
+      main: [...pools.emails.main],
+      pump_20off25: [...pools.emails.pump_20off25],
+      pump_25off: [...pools.emails.pump_25off]
+    }
+  };
+
+  lines.forEach((line, index) => {
+    const emailValidation = validateEmail(line);
+
+    if (!emailValidation.valid) {
+      results.invalid.push(`Line ${index + 1}: ${emailValidation.error}`);
+      return;
+    }
+
+    let found = false;
+
+    if (targetPool === 'all') {
+      // Remove from all pools
+      Object.keys(updatedPools.emails).forEach(poolName => {
+        const emailIndex = updatedPools.emails[poolName].indexOf(emailValidation.cleanEmail);
+        if (emailIndex !== -1) {
+          updatedPools.emails[poolName].splice(emailIndex, 1);
+          found = true;
+        }
+      });
+    } else {
+      // Remove from specific pool
+      const emailIndex = updatedPools.emails[targetPool].indexOf(emailValidation.cleanEmail);
+      if (emailIndex !== -1) {
+        updatedPools.emails[targetPool].splice(emailIndex, 1);
+        found = true;
+      }
+    }
+
+    if (found) {
+      results.removed++;
+    } else {
+      results.notFound++;
+    }
+  });
+
+  // Create response embed
+  const embed = {
+    title: `📧 Bulk Emails Removal Results (${targetPool} pool${targetPool === 'all' ? 's' : ''})`,
+    color: results.removed > 0 ? '#00ff00' : '#ff6600',
+    fields: [
+      { name: 'Total Processed', value: results.total.toString(), inline: true },
+      { name: 'Successfully Removed', value: results.removed.toString(), inline: true },
+      { name: 'Not Found', value: results.notFound.toString(), inline: true },
+      { name: 'Invalid Lines', value: results.invalid.length.toString(), inline: true }
+    ]
+  };
+
+  // Add pool counts
+  if (targetPool === 'all') {
+    Object.keys(updatedPools.emails).forEach(poolName => {
+      embed.fields.push({
+        name: `${poolName} Pool`,
+        value: updatedPools.emails[poolName].length.toString(),
+        inline: true
+      });
+    });
+  } else {
+    embed.fields.push({
+      name: `${targetPool} Pool Remaining`,
+      value: updatedPools.emails[targetPool].length.toString(),
+      inline: true
+    });
+  }
+
+  if (results.invalid.length > 0) {
+    const errorList = results.invalid.slice(0, 10).join('\n');
+    const moreErrors = results.invalid.length > 10 ? `\n... and ${results.invalid.length - 10} more errors` : '';
+    embed.fields.push({
+      name: 'Error Details',
+      value: `\`\`\`\n${errorList}${moreErrors}\`\`\``,
+      inline: false
+    });
+  }
+
+  const response = results.removed > 0
+    ? `✅ Successfully processed bulk emails removal!`
+    : results.invalid.length > 0
+    ? `⚠️ Bulk emails removal completed with errors.`
+    : `❌ No valid emails found to remove.`;
+
+  return {
+    response,
+    embed,
+    updatedPools
   };
 }

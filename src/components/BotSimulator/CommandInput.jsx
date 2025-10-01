@@ -5,7 +5,9 @@ const CommandInput = ({ onCommand, isProcessing }) => {
   const [input, setInput] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedSuggestion, setSelectedSuggestion] = useState(0);
+  const [selectedFile, setSelectedFile] = useState(null);
   const inputRef = useRef(null);
+  const fileInputRef = useRef(null);
 
   const commands = [
     {
@@ -82,6 +84,48 @@ const CommandInput = ({ onCommand, isProcessing }) => {
       name: '/help',
       description: 'Show available commands',
       params: ''
+    },
+    {
+      name: '/bulk_cards',
+      description: 'Add multiple cards from TXT or CSV file (Admin)',
+      params: 'file:bulk_cards_sample.txt',
+      requiresFile: true,
+      acceptedFiles: '.txt,.csv'
+    },
+    {
+      name: '/bulk_emails_main',
+      description: 'Add multiple emails to main pool from TXT file (Admin)',
+      params: 'file:bulk_emails_main_sample.txt',
+      requiresFile: true,
+      acceptedFiles: '.txt'
+    },
+    {
+      name: '/bulk_emails_pump20',
+      description: 'Add multiple emails to pump_20off25 pool from TXT file (Admin)',
+      params: 'file:bulk_emails_pump20_sample.txt',
+      requiresFile: true,
+      acceptedFiles: '.txt'
+    },
+    {
+      name: '/bulk_emails_pump25',
+      description: 'Add multiple emails to pump_25off pool from TXT file (Admin)',
+      params: 'file:bulk_emails_pump25_sample.txt',
+      requiresFile: true,
+      acceptedFiles: '.txt'
+    },
+    {
+      name: '/remove_bulk_cards',
+      description: 'Remove multiple cards from pool using TXT file (Admin)',
+      params: 'file:bulk_cards_sample.txt',
+      requiresFile: true,
+      acceptedFiles: '.txt'
+    },
+    {
+      name: '/remove_bulk_emails',
+      description: 'Remove multiple emails from pools using TXT file (Admin)',
+      params: 'file:bulk_emails_main_sample.txt pool:main',
+      requiresFile: true,
+      acceptedFiles: '.txt'
     }
   ];
 
@@ -89,14 +133,55 @@ const CommandInput = ({ onCommand, isProcessing }) => {
     cmd.name.toLowerCase().includes(input.toLowerCase()) && input.startsWith('/')
   );
 
-  const handleSubmit = () => {
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
+  const readFileContent = (file) => {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target.result);
+      reader.onerror = (e) => reject(e);
+      reader.readAsText(file);
+    });
+  };
+
+  const isBulkCommand = (command) => {
+    return command.startsWith('/bulk_') || command.startsWith('/remove_bulk_');
+  };
+
+  const useSampleFile = async (filename) => {
+    try {
+      const response = await fetch(`/sample-data/${filename}`);
+      if (!response.ok) {
+        throw new Error(`Failed to load ${filename}`);
+      }
+      const content = await response.text();
+
+      // Create a fake file object
+      const fakeFile = {
+        name: filename,
+        size: content.length,
+        content: content
+      };
+
+      setSelectedFile(fakeFile);
+    } catch (error) {
+      alert('Error loading sample file: ' + error.message);
+    }
+  };
+
+  const handleSubmit = async () => {
     if (!input.trim() || isProcessing) return;
 
     // Parse command and parameters
     const parts = input.trim().split(' ');
     const command = parts[0];
     const params = {};
-    
+
     // Simple parameter parsing for key:value pairs
     parts.slice(1).forEach(part => {
       const [key, value] = part.split(':');
@@ -105,15 +190,47 @@ const CommandInput = ({ onCommand, isProcessing }) => {
       }
     });
 
+    // Handle file upload for bulk commands
+    if (isBulkCommand(command)) {
+      if (!selectedFile) {
+        alert('Please select a file for bulk operations.');
+        return;
+      }
+
+      try {
+        let fileContent;
+        if (selectedFile.content) {
+          // This is a sample file that already has content
+          fileContent = selectedFile.content;
+        } else {
+          // This is a real uploaded file
+          fileContent = await readFileContent(selectedFile);
+        }
+
+        params.file = {
+          name: selectedFile.name,
+          content: fileContent,
+          size: selectedFile.size
+        };
+      } catch (error) {
+        alert('Error reading file: ' + error.message);
+        return;
+      }
+    }
+
     onCommand(command, params);
     setInput('');
+    setSelectedFile(null);
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
     setShowSuggestions(false);
   };
 
-  const handleKeyPress = (e) => {
+  const handleKeyPress = async (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
-      handleSubmit();
+      await handleSubmit();
     }
   };
 
@@ -202,6 +319,75 @@ const CommandInput = ({ onCommand, isProcessing }) => {
 
       {/* Input Form */}
       <div className="p-2 sm:p-4">
+        {/* File Upload for Bulk Commands */}
+        {isBulkCommand(input.split(' ')[0]) && (
+          <div className="mb-3 p-3 bg-gray-700 rounded-lg border border-gray-600">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-sm text-gray-300">📁 File Upload Required:</span>
+              <span className="text-xs text-gray-400">
+                {(() => {
+                  const cmd = commands.find(c => c.name === input.split(' ')[0]);
+                  return cmd?.acceptedFiles || '.txt';
+                })()} files
+              </span>
+            </div>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept={(() => {
+                const cmd = commands.find(c => c.name === input.split(' ')[0]);
+                return cmd?.acceptedFiles || '.txt';
+              })()}
+              onChange={handleFileChange}
+              className="w-full text-sm text-gray-300 file:mr-4 file:py-2 file:px-4 file:rounded file:border-0 file:text-sm file:font-medium file:bg-blue-600 file:text-white hover:file:bg-blue-700 file:cursor-pointer"
+            />
+            {selectedFile && (
+              <div className="mt-2 text-xs text-green-400">
+                ✅ Selected: {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
+                {selectedFile.content && <span className="ml-2 text-yellow-400">(Sample File)</span>}
+              </div>
+            )}
+            <div className="mt-2 space-y-2">
+              <div className="text-xs text-gray-400">
+                💡 Quick options:
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {(() => {
+                  const cmd = input.split(' ')[0];
+                  const buttons = [];
+
+                  if (cmd === '/bulk_cards' || cmd === '/remove_bulk_cards') {
+                    buttons.push(
+                      <button key="txt" onClick={() => useSampleFile('bulk_cards_sample.txt')} className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded">Use Sample TXT</button>,
+                      <button key="csv" onClick={() => useSampleFile('bulk_cards_sample.csv')} className="text-xs bg-green-600 hover:bg-green-700 text-white px-2 py-1 rounded">Use Sample CSV</button>
+                    );
+                  } else if (cmd === '/bulk_emails_main' || (cmd === '/remove_bulk_emails' && !input.includes('pool:'))) {
+                    buttons.push(
+                      <button key="main" onClick={() => useSampleFile('bulk_emails_main_sample.txt')} className="text-xs bg-blue-600 hover:bg-blue-700 text-white px-2 py-1 rounded">Use Sample Emails</button>
+                    );
+                  } else if (cmd === '/bulk_emails_pump20') {
+                    buttons.push(
+                      <button key="pump20" onClick={() => useSampleFile('bulk_emails_pump20_sample.txt')} className="text-xs bg-purple-600 hover:bg-purple-700 text-white px-2 py-1 rounded">Use Sample Pump20</button>
+                    );
+                  } else if (cmd === '/bulk_emails_pump25') {
+                    buttons.push(
+                      <button key="pump25" onClick={() => useSampleFile('bulk_emails_pump25_sample.txt')} className="text-xs bg-indigo-600 hover:bg-indigo-700 text-white px-2 py-1 rounded">Use Sample Pump25</button>
+                    );
+                  }
+
+                  return buttons;
+                })()}
+              </div>
+              <div className="text-xs text-gray-500">
+                Or download:
+                <a href="/sample-data/bulk_cards_sample.txt" download className="text-blue-400 hover:underline">Cards (TXT)</a> |
+                <a href="/sample-data/bulk_cards_sample.csv" download className="text-blue-400 hover:underline">Cards (CSV)</a> |
+                <a href="/sample-data/bulk_emails_main_sample.txt" download className="text-blue-400 hover:underline">Emails</a>
+              </div>
+            </div>
+          </div>
+        )}
+
         <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 items-stretch sm:items-end">
           <div className="flex-1 relative">
             <input
@@ -228,7 +414,7 @@ const CommandInput = ({ onCommand, isProcessing }) => {
           
           <button
             type="button"
-            disabled={!input.trim() || isProcessing}
+            disabled={!input.trim() || isProcessing || (isBulkCommand(input.split(' ')[0]) && !selectedFile)}
             onClick={handleSubmit}
             className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-600 disabled:cursor-not-allowed text-white px-4 sm:px-6 py-2 sm:py-3 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 text-sm sm:text-base min-w-[80px] sm:min-w-[100px]"
           >

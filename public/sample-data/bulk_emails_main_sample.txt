@@ -1,0 +1,10 @@
+user1@gmail.com
+user2@yahoo.com
+user3@hotmail.com
+customer@example.com
+test.user@domain.com
+john.doe@company.org
+jane.smith@business.net
+support@service.com
+invalid-email-format
+contact@store.biz

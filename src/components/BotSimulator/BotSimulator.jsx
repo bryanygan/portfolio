@@ -68,7 +68,13 @@ const BotSimulator = () => {
     let fullCommand = command;
     if (Object.keys(params).length > 0) {
       const paramString = Object.entries(params)
-        .map(([key, value]) => `${key}:${value}`)
+        .map(([key, value]) => {
+          // Handle file objects specially
+          if (key === 'file' && value && typeof value === 'object' && value.name) {
+            return `${key}:${value.name}`;
+          }
+          return `${key}:${value}`;
+        })
         .join(' ');
       fullCommand = `${command} ${paramString}`;
     }

@@ -1,0 +1,11 @@
+ID,Name,Email,Phone,Address,Card Number,Expiry,CVV,ZIP,Status
+1,John Doe,john@example.com,555-1234,123 Main St,4111111111111111,12/26,123,12345,Active
+2,Jane Smith,jane@example.com,555-5678,456 Oak Ave,4222222222222223,03/27,456,67890,Active
+3,Bob Johnson,bob@example.com,555-9012,789 Pine Rd,4333333333333334,08/25,789,54321,Active
+4,Alice Williams,alice@example.com,555-3456,321 Elm St,4444444444444448,11/28,321,98765,Active
+5,Charlie Brown,charlie@example.com,555-7890,654 Maple Dr,4532015112830366,05/26,654,13579,Active
+6,Diana Prince,diana@example.com,555-2468,987 Cedar Ln,4716461072675658,09/27,987,24680,Active
+7,Frank Miller,frank@example.com,555-1357,135 Birch St,4000000000000002,07/25,135,11111,Active
+8,Grace Lee,grace@example.com,555-8642,246 Spruce Ave,4242424242424242,12/29,246,22222,Active
+9,Henry Davis,henry@example.com,555-9753,357 Fir Rd,4999999999999999,04/26,357,33333,Active
+10,Iris Wilson,iris@example.com,555-8520,468 Ash Dr,5555555555554444,10/27,468,44444,Active
