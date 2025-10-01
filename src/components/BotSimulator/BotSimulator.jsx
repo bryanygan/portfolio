@@ -12,6 +12,7 @@ const BotSimulator = () => {
     }
   ]);
   const [isTyping, setIsTyping] = useState(false);
+  const [showPoolStatus, setShowPoolStatus] = useState(false);
   const [pools, setPools] = useState({
     cards: ['3856273926573829,123', '3948374615728453,456'],
     emails: {
@@ -105,58 +106,129 @@ const BotSimulator = () => {
         </div>
 
         {/* Chat Area - Fixed Height */}
-        <div className="flex flex-col lg:flex-row flex-1 min-h-0 overflow-hidden">
-          {/* Main Chat */}
+        <div className="flex flex-row flex-1 min-h-0 overflow-hidden">
+          {/* Main Chat - Full width on mobile, shared on desktop */}
           <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
             <ChatInterface messages={messages} isTyping={isTyping} />
             <CommandInput onCommand={simulateCommand} />
           </div>
-          
-          {/* Sidebar - Pool Status */}
-          <div className="w-full lg:w-56 xl:w-64 bg-gray-750 border-t lg:border-t-0 lg:border-l border-gray-700 p-3 sm:p-4 flex-shrink-0 lg:max-h-full lg:overflow-y-auto">
-            <h3 className="text-white font-semibold mb-2 sm:mb-3 text-sm sm:text-base">
-              Pool Status
-            </h3>
-            <div className="space-y-2 sm:space-y-3">
-              <div>
-                <p className="text-gray-400 text-xs sm:text-sm">
-                  Cards: {pools.cards.length}
-                </p>
-                <div className="bg-gray-800 rounded p-2 text-xs text-gray-300 mt-1 overflow-hidden">
-                  {pools.cards.slice(0, 2).map((card, i) => (
-                    <div key={i} className="font-bold truncate">
-                      ****{card.split(',')[0].slice(-4)}
-                    </div>
-                  ))}
-                  {pools.cards.length > 2 && (
-                    <div className="text-gray-500">
-                      +{pools.cards.length - 2} more
-                    </div>
-                  )}
+
+          {/* Desktop Sidebar - Pool Status */}
+          <div className="hidden lg:flex w-56 xl:w-64 bg-gray-750 border-l border-gray-700 p-4 flex-shrink-0 max-h-full overflow-y-auto">
+            <div className="w-full">
+              <h3 className="text-white font-semibold mb-3 text-base">
+                Pool Status
+              </h3>
+              <div className="space-y-3">
+                <div>
+                  <p className="text-gray-400 text-sm">
+                    Cards: {pools.cards.length}
+                  </p>
+                  <div className="bg-gray-800 rounded p-2 text-xs text-gray-300 mt-1 overflow-hidden">
+                    {pools.cards.slice(0, 2).map((card, i) => (
+                      <div key={i} className="font-bold truncate">
+                        ****{card.split(',')[0].slice(-4)}
+                      </div>
+                    ))}
+                    {pools.cards.length > 2 && (
+                      <div className="text-gray-500">
+                        +{pools.cards.length - 2} more
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-gray-400 text-sm">
+                    Email Pools:
+                  </p>
+                  <div className="bg-gray-800 rounded p-2 text-xs text-gray-300 mt-1 overflow-hidden space-y-1">
+                    {Object.entries(pools.emails).map(([poolName, emailArray]) => (
+                      <div key={poolName}>
+                        <div className="text-gray-400 font-semibold">
+                          {poolName}: {emailArray.length}
+                        </div>
+                        {emailArray.slice(0, 1).map((email, i) => (
+                          <div key={i} className="truncate text-gray-300 ml-2" title={email}>
+                            {email}
+                          </div>
+                        ))}
+                        {emailArray.length > 1 && (
+                          <div className="text-gray-500 ml-2">
+                            +{emailArray.length - 1} more
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
-              <div>
-                <p className="text-gray-400 text-xs sm:text-sm">
-                  Email Pools:
-                </p>
-                <div className="bg-gray-800 rounded p-2 text-xs text-gray-300 mt-1 overflow-hidden space-y-1">
-                  {Object.entries(pools.emails).map(([poolName, emailArray]) => (
-                    <div key={poolName}>
-                      <div className="text-gray-400 font-semibold">
-                        {poolName}: {emailArray.length}
+            </div>
+          </div>
+        </div>
+
+        {/* Mobile Pool Status - Bottom Accordion */}
+        <div className="lg:hidden flex-shrink-0">
+          <button
+            onClick={() => setShowPoolStatus(!showPoolStatus)}
+            className="w-full flex items-center justify-between p-3 bg-gray-800 border-t border-gray-700 text-white hover:bg-gray-700 transition-colors"
+          >
+            <span className="text-sm font-medium">
+              Pool Status (Cards: {pools.cards.length}, Emails: {Object.values(pools.emails).reduce((sum, arr) => sum + arr.length, 0)})
+            </span>
+            <svg
+              className={`w-4 h-4 transition-transform duration-200 ${showPoolStatus ? 'rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          </button>
+
+          {/* Mobile Pool Status Content - Expands downward */}
+          <div className={`overflow-hidden transition-all duration-300 ${showPoolStatus ? 'max-h-96 opacity-100' : 'max-h-0 opacity-0'}`}>
+            <div className="p-3 bg-gray-750 border-t border-gray-700">
+              <div className="space-y-3">
+                <div>
+                  <p className="text-gray-400 text-xs">
+                    Cards: {pools.cards.length}
+                  </p>
+                  <div className="bg-gray-800 rounded p-2 text-xs text-gray-300 mt-1 overflow-hidden">
+                    {pools.cards.slice(0, 2).map((card, i) => (
+                      <div key={i} className="font-bold truncate">
+                        ****{card.split(',')[0].slice(-4)}
                       </div>
-                      {emailArray.slice(0, 1).map((email, i) => (
-                        <div key={i} className="truncate text-gray-300 ml-2" title={email}>
-                          {email}
+                    ))}
+                    {pools.cards.length > 2 && (
+                      <div className="text-gray-500">
+                        +{pools.cards.length - 2} more
+                      </div>
+                    )}
+                  </div>
+                </div>
+                <div>
+                  <p className="text-gray-400 text-xs">
+                    Email Pools:
+                  </p>
+                  <div className="bg-gray-800 rounded p-2 text-xs text-gray-300 mt-1 overflow-hidden space-y-1">
+                    {Object.entries(pools.emails).map(([poolName, emailArray]) => (
+                      <div key={poolName}>
+                        <div className="text-gray-400 font-semibold">
+                          {poolName}: {emailArray.length}
                         </div>
-                      ))}
-                      {emailArray.length > 1 && (
-                        <div className="text-gray-500 ml-2">
-                          +{emailArray.length - 1} more
-                        </div>
-                      )}
-                    </div>
-                  ))}
+                        {emailArray.slice(0, 1).map((email, i) => (
+                          <div key={i} className="truncate text-gray-300 ml-2" title={email}>
+                            {email}
+                          </div>
+                        ))}
+                        {emailArray.length > 1 && (
+                          <div className="text-gray-500 ml-2">
+                            +{emailArray.length - 1} more
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
               </div>
             </div>
