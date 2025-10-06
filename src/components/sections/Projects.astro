@@ -10,6 +10,7 @@ interface Project {
   tags: string[];
   liveUrl?: string;
   repoUrl?: string;
+  isInternal?: boolean;
 }
 
 const projects: Project[] = [
@@ -30,6 +31,7 @@ const projects: Project[] = [
     tags: ['TypeScript', 'React', 'Vitest', 'OOP', 'Design Patterns'],
     liveUrl: '/banking-system',
     repoUrl: 'https://github.com/bryanygan/bankingsystem',
+    isInternal: true,
   },
   {
     title: 'Discord Bots',
@@ -37,7 +39,7 @@ const projects: Project[] = [
     image: '/assets/images/projects/discbot.png',
     tags: ['JavaScript', 'Node.js', 'Python', 'Databases', 'HTML'],
     liveUrl: 'https://bryangan.com/bots',
-    
+    isInternal: true,
   }
 ];
 ---
@@ -65,7 +67,7 @@ const projects: Project[] = [
               
               <div class="flex gap-3">
                 {project.liveUrl && (
-                  <Button href={project.liveUrl} variant="outline" target="_blank" size="lg">
+                  <Button href={project.liveUrl} variant="outline" target={project.isInternal ? undefined : "_blank"} size="lg">
                     View Project
                   </Button>
                 )}
