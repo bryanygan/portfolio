@@ -68,9 +68,21 @@ export function AccountCard({ account, onClick, selected = false }: AccountCardP
             ${balance.toFixed(2)}
           </div>
         </div>
-        <div className="text-right">
-          <div className="text-xs opacity-75">APR</div>
-          <div className="text-lg font-semibold">{apr.toFixed(2)}%</div>
+        <div className="flex flex-col items-end gap-2">
+          <div className="text-right">
+            <div className="text-xs opacity-75">APR</div>
+            <div className="text-lg font-semibold">{apr.toFixed(2)}%</div>
+          </div>
+          {onClick && (
+            <svg
+              className={`w-5 h-5 transition-transform duration-300 ${selected ? 'rotate-180' : ''}`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+            </svg>
+          )}
         </div>
       </div>
 

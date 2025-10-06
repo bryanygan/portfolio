@@ -8,17 +8,25 @@ import { OutputDisplay } from './OutputDisplay';
 
 export function BankingSimulator() {
   const banking = useBankingSystem();
-  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
+  const [expandedAccountIds, setExpandedAccountIds] = useState<Set<string>>(new Set());
   const [activeView, setActiveView] = useState<'accounts' | 'output'>('accounts');
 
-  const selectedAccountTransactions = selectedAccountId
-    ? banking.parsedOutput.accountOutputs.get(selectedAccountId)?.transactions || []
-    : [];
+  const toggleAccountDropdown = (accountId: string) => {
+    setExpandedAccountIds(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(accountId)) {
+        newSet.delete(accountId);
+      } else {
+        newSet.add(accountId);
+      }
+      return newSet;
+    });
+  };
 
   const handleReset = () => {
     if (confirm('Are you sure you want to reset the banking system? All accounts and history will be cleared.')) {
       banking.reset();
-      setSelectedAccountId(null);
+      setExpandedAccountIds(new Set());
     }
   };
 
@@ -112,28 +120,35 @@ export function BankingSimulator() {
                   </code>
                 </div>
               ) : (
-                <>
-                  <div className="grid gap-4">
-                    {banking.accounts.map((account) => (
-                      <AccountCard
-                        key={account.getAccountID()}
-                        account={account}
-                        onClick={() => setSelectedAccountId(account.getAccountID())}
-                        selected={selectedAccountId === account.getAccountID()}
-                      />
-                    ))}
-                  </div>
+                <div className="space-y-4">
+                  {banking.accounts.map((account) => {
+                    const accountId = account.getAccountID();
+                    const isExpanded = expandedAccountIds.has(accountId);
+                    const transactions = banking.parsedOutput.accountOutputs.get(accountId)?.transactions || [];
 
-                  {/* Transaction History for Selected Account */}
-                  {selectedAccountId && (
-                    <div className="mt-6">
-                      <TransactionHistory
-                        transactions={selectedAccountTransactions}
-                        accountId={selectedAccountId}
-                      />
-                    </div>
-                  )}
-                </>
+                    return (
+                      <div key={accountId} className="space-y-2">
+                        <AccountCard
+                          account={account}
+                          onClick={() => toggleAccountDropdown(accountId)}
+                          selected={isExpanded}
+                        />
+
+                        {/* Transaction History Dropdown */}
+                        <div
+                          className={`overflow-hidden transition-all duration-300 ease-in-out ${
+                            isExpanded ? 'max-h-[600px] opacity-100' : 'max-h-0 opacity-0'
+                          }`}
+                        >
+                          <TransactionHistory
+                            transactions={transactions}
+                            accountId={accountId}
+                          />
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
               )}
             </div>
           )}
