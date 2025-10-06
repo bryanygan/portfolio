@@ -9,6 +9,7 @@ export interface BankingSystemState {
   commandHistory: string[];
   output: string[];
   isProcessing: boolean;
+  updateCounter: number; // Forces re-render when bank state changes
 }
 
 export function useBankingSystem() {
@@ -19,14 +20,16 @@ export function useBankingSystem() {
       masterControl: new MasterControl(bank),
       commandHistory: [],
       output: [],
-      isProcessing: false
+      isProcessing: false,
+      updateCounter: 0
     };
   });
 
   // Get all accounts as an array
+  // Use updateCounter to ensure we re-compute when bank state changes
   const accounts = useMemo(() => {
     return Array.from(state.bank.getAllAccounts().values());
-  }, [state.bank]);
+  }, [state.bank, state.updateCounter]);
 
   // Execute a single command
   const executeCommand = useCallback((command: string) => {
@@ -39,7 +42,8 @@ export function useBankingSystem() {
           ...prev,
           commandHistory: [...prev.commandHistory, command],
           output: newOutput,
-          isProcessing: false
+          isProcessing: false,
+          updateCounter: prev.updateCounter + 1
         };
       } catch (error) {
         console.error('Error executing command:', error);
@@ -62,7 +66,8 @@ export function useBankingSystem() {
           ...prev,
           commandHistory: [...prev.commandHistory, ...commands],
           output: newOutput,
-          isProcessing: false
+          isProcessing: false,
+          updateCounter: prev.updateCounter + 1
         };
       } catch (error) {
         console.error('Error executing batch:', error);
@@ -82,7 +87,8 @@ export function useBankingSystem() {
       masterControl: new MasterControl(newBank),
       commandHistory: [],
       output: [],
-      isProcessing: false
+      isProcessing: false,
+      updateCounter: 0
     });
   }, []);
 
