@@ -14,11 +14,6 @@ export function TerminalInput({ onExecute, history, disabled = false }: Terminal
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
-  // Focus input on mount
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
-
   // Generate command suggestions based on input
   const generateSuggestions = (value: string): string[] => {
     if (!value.trim()) return [];
