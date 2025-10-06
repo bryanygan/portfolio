@@ -1,9 +1,24 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import { BankingSimulator } from '../components/banking/BankingSimulator';
+import { ArchitectureDiagram } from '../components/banking/ArchitectureDiagram';
+import { OOPPrinciplesSection } from '../components/banking/OOPPrinciplesSection';
+import { DesignPatternsSection } from '../components/banking/DesignPatternsSection';
+import { TestCoverageSection } from '../components/banking/TestCoverageSection';
+
+const seoData = {
+  title: 'Banking System Simulator | Bryan Gan',
+  description: 'Interactive command-driven banking system demonstrating OOP design patterns, test-driven development with 151 passing tests, and modern TypeScript architecture.',
+  ogImage: '/assets/images/banking-system/banking_system_UML_transparent.png',
+  keywords: 'banking system, TypeScript, React, OOP, design patterns, TDD, software engineering, portfolio project'
+};
 ---
 
-<Layout title="Banking System Simulator | Bryan Gan">
+<Layout
+  title={seoData.title}
+  description={seoData.description}
+  ogImage={seoData.ogImage}
+>
   <main class="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 pt-28 pb-12">
     <!-- Hero Section -->
     <section class="max-w-7xl mx-auto px-4 mb-12">
@@ -66,6 +81,21 @@ import { BankingSimulator } from '../components/banking/BankingSimulator';
 
     <!-- Main Simulator -->
     <BankingSimulator client:load />
+
+    <!-- Educational Content Sections -->
+    <section class="max-w-7xl mx-auto px-4 mt-16 space-y-12">
+      <!-- Architecture Diagram -->
+      <ArchitectureDiagram client:load />
+
+      <!-- Design Patterns -->
+      <DesignPatternsSection client:load />
+
+      <!-- OOP Principles -->
+      <OOPPrinciplesSection client:load />
+
+      <!-- Test Coverage -->
+      <TestCoverageSection client:load />
+    </section>
 
     <!-- Technical Details Section -->
     <section class="max-w-7xl mx-auto px-4 mt-16">

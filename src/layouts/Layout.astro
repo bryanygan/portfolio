@@ -12,12 +12,14 @@ interface Props {
 	title: string;
 	description?: string;
 	canonicalUrl?: string;
+	ogImage?: string;
 }
 
-const { 
-	title, 
+const {
+	title,
 	description = 'Front-end Developer Portfolio',
-	canonicalUrl = Astro.url.pathname 
+	canonicalUrl = Astro.url.pathname,
+	ogImage
 } = Astro.props;
 
 // Construct the full canonical URL
@@ -53,14 +55,14 @@ const fullCanonicalUrl = `${siteUrl}${canonicalUrl}`;
 		<meta property="og:description" content={description} />
 		<meta property="og:url" content={fullCanonicalUrl} />
 		<meta property="og:type" content="website" />
-		<meta property="og:image" content={`${siteUrl}/apple-touch-icon.png`} />
+		<meta property="og:image" content={ogImage ? `${siteUrl}${ogImage}` : `${siteUrl}/apple-touch-icon.png`} />
 		<meta property="og:locale" content="pt_BR" />
-		
+
 		<!-- Twitter Tags -->
 		<meta name="twitter:card" content="summary_large_image" />
 		<meta name="twitter:title" content={title} />
 		<meta name="twitter:description" content={description} />
-		<meta name="twitter:image" content={`${siteUrl}/apple-touch-icon.png`} />
+		<meta name="twitter:image" content={ogImage ? `${siteUrl}${ogImage}` : `${siteUrl}/apple-touch-icon.png`} />
 		
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
