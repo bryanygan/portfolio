@@ -1,4 +1,8 @@
 import React from 'react';
+import { MdAdd, MdOutlineAccountBalance } from 'react-icons/md';
+import { FaDollarSign, FaMoneyBillWave } from 'react-icons/fa';
+import { BiTransfer } from 'react-icons/bi';
+import { IoTimeOutline } from 'react-icons/io5';
 
 interface TransactionHistoryProps {
   transactions: string[];
@@ -21,12 +25,12 @@ export function TransactionHistory({ transactions, accountId }: TransactionHisto
   }
 
   const getCommandIcon = (command: string) => {
-    if (command.startsWith('create')) return { icon: '➕', color: 'text-blue-500', bg: 'bg-blue-100 dark:bg-blue-900/30' };
-    if (command.startsWith('deposit')) return { icon: '💵', color: 'text-green-500', bg: 'bg-green-100 dark:bg-green-900/30' };
-    if (command.startsWith('withdraw')) return { icon: '💸', color: 'text-red-500', bg: 'bg-red-100 dark:bg-red-900/30' };
-    if (command.startsWith('transfer')) return { icon: '🔄', color: 'text-purple-500', bg: 'bg-purple-100 dark:bg-purple-900/30' };
-    if (command.startsWith('pass')) return { icon: '⏱️', color: 'text-yellow-500', bg: 'bg-yellow-100 dark:bg-yellow-900/30' };
-    return { icon: '📋', color: 'text-gray-500', bg: 'bg-gray-100 dark:bg-gray-900/30' };
+    if (command.startsWith('create')) return { icon: <MdAdd className="w-5 h-5" />, color: 'text-blue-500', bg: 'bg-blue-100 dark:bg-blue-900/30' };
+    if (command.startsWith('deposit')) return { icon: <FaDollarSign className="w-5 h-5" />, color: 'text-green-500', bg: 'bg-green-100 dark:bg-green-900/30' };
+    if (command.startsWith('withdraw')) return { icon: <FaMoneyBillWave className="w-5 h-5" />, color: 'text-red-500', bg: 'bg-red-100 dark:bg-red-900/30' };
+    if (command.startsWith('transfer')) return { icon: <BiTransfer className="w-5 h-5" />, color: 'text-purple-500', bg: 'bg-purple-100 dark:bg-purple-900/30' };
+    if (command.startsWith('pass')) return { icon: <IoTimeOutline className="w-5 h-5" />, color: 'text-yellow-500', bg: 'bg-yellow-100 dark:bg-yellow-900/30' };
+    return { icon: <MdOutlineAccountBalance className="w-5 h-5" />, color: 'text-gray-500', bg: 'bg-gray-100 dark:bg-gray-900/30' };
   };
 
   const getCommandType = (command: string): string => {
@@ -66,8 +70,8 @@ export function TransactionHistory({ transactions, accountId }: TransactionHisto
               >
                 <div className="flex items-start gap-4">
                   {/* Icon */}
-                  <div className={`flex-shrink-0 w-10 h-10 rounded-full ${bg} flex items-center justify-center`}>
-                    <span className="text-lg" aria-hidden="true">{icon}</span>
+                  <div className={`flex-shrink-0 w-10 h-10 rounded-full ${bg} flex items-center justify-center ${color}`}>
+                    <span aria-hidden="true">{icon}</span>
                   </div>
 
                   {/* Transaction Details */}

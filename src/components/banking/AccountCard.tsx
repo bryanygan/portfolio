@@ -1,6 +1,7 @@
 import React from 'react';
 import type { Account } from '../../../lib/banking/core/Account';
 import { AccountType } from '../../../lib/banking/types';
+import { FaRegCreditCard, FaPiggyBank, FaLock, FaDollarSign } from 'react-icons/fa';
 
 interface AccountCardProps {
   account: Account;
@@ -20,25 +21,25 @@ export function AccountCard({ account, onClick, selected = false }: AccountCardP
       case AccountType.Checking:
         return {
           gradient: 'from-blue-500 to-blue-600',
-          icon: '💳',
+          icon: <FaRegCreditCard className="w-6 h-6" />,
           name: 'Checking'
         };
       case AccountType.Savings:
         return {
           gradient: 'from-green-500 to-green-600',
-          icon: '💰',
+          icon: <FaPiggyBank className="w-6 h-6" />,
           name: 'Savings'
         };
       case AccountType.Cd:
         return {
           gradient: 'from-purple-500 to-purple-600',
-          icon: '🔒',
+          icon: <FaLock className="w-6 h-6" />,
           name: 'Certificate of Deposit'
         };
       default:
         return {
           gradient: 'from-gray-500 to-gray-600',
-          icon: '💵',
+          icon: <FaDollarSign className="w-6 h-6" />,
           name: 'Account'
         };
     }
@@ -61,7 +62,7 @@ export function AccountCard({ account, onClick, selected = false }: AccountCardP
       <div className="flex items-start justify-between mb-4">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-2xl" aria-label={styles.name}>{styles.icon}</span>
+            <span aria-label={styles.name}>{styles.icon}</span>
             <span className="text-sm font-medium opacity-90">{styles.name}</span>
           </div>
           <div className="text-3xl font-bold" aria-label={`Balance: $${balance.toFixed(2)}`}>

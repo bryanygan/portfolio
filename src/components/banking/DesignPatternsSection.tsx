@@ -1,10 +1,15 @@
 import React from 'react';
+import { HiLightningBolt } from 'react-icons/hi';
+import { BsDatabase } from 'react-icons/bs';
+import { FaIndustry } from 'react-icons/fa';
+import { GiTargetShot } from 'react-icons/gi';
+import { AiOutlineFileText } from 'react-icons/ai';
 
 export function DesignPatternsSection() {
   const patterns = [
     {
       name: 'Command Pattern',
-      icon: '⚡',
+      icon: <HiLightningBolt className="w-12 h-12" />,
       description: 'Encapsulates each banking operation (create, deposit, withdraw, transfer, pass) as a separate command object with validation and execution logic.',
       problem: 'Need to support multiple operations with different validation rules and execution logic',
       solution: 'Separate validators and processors for each command type',
@@ -34,7 +39,7 @@ class DepositCommandValidator {
     },
     {
       name: 'Repository Pattern',
-      icon: '🗄️',
+      icon: <BsDatabase className="w-12 h-12" />,
       description: 'Bank class acts as a repository, abstracting account storage and providing a clean interface for account management operations.',
       problem: 'Need centralized account storage with efficient lookups and lifecycle management',
       solution: 'Bank repository with Map-based storage for O(1) access',
@@ -61,7 +66,7 @@ class DepositCommandValidator {
     },
     {
       name: 'Factory Method (Implicit)',
-      icon: '🏭',
+      icon: <FaIndustry className="w-12 h-12" />,
       description: 'Account creation is handled through processors that instantiate the correct account subclass based on the command type parameter.',
       problem: 'Need to create different account types (Checking, Savings, CD) based on runtime input',
       solution: 'Processor determines type and creates appropriate instance',
@@ -93,7 +98,7 @@ class DepositCommandValidator {
     },
     {
       name: 'Strategy Pattern',
-      icon: '🎯',
+      icon: <GiTargetShot className="w-12 h-12" />,
       description: 'Different validation strategies for each command type, allowing runtime selection of the appropriate validation algorithm.',
       problem: 'Each command type has unique validation rules that differ significantly',
       solution: 'Separate validator classes implementing command-specific validation logic',
@@ -120,7 +125,7 @@ class TransferCommandValidator {
     },
     {
       name: 'Template Method (Implicit)',
-      icon: '📋',
+      icon: <AiOutlineFileText className="w-12 h-12" />,
       description: 'Account base class defines the skeleton of time passage operations, with subclasses overriding specific steps like APR compounding.',
       problem: 'All accounts accrue APR but CD accounts need quarterly compounding',
       solution: 'Base class provides template, subclasses override specific methods',
@@ -167,7 +172,7 @@ class CertificateOfDeposit extends Account {
           >
             {/* Header */}
             <div className="flex items-start gap-4 mb-4">
-              <span className="text-5xl">{pattern.icon}</span>
+              <div className="text-gray-700 dark:text-gray-300 mt-1">{pattern.icon}</div>
               <div className="flex-1">
                 <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                   {pattern.name}

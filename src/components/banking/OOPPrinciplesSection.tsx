@@ -1,10 +1,13 @@
 import React from 'react';
+import { FaLock, FaTree } from 'react-icons/fa';
+import { GiTheaterCurtains } from 'react-icons/gi';
+import { MdPalette } from 'react-icons/md';
 
 export function OOPPrinciplesSection() {
   const principles = [
     {
       title: 'Encapsulation',
-      icon: '🔒',
+      icon: <FaLock className="w-10 h-10" />,
       color: 'blue',
       description: 'Account balance and internal state are private fields, accessed only through controlled public methods that enforce business rules and validation.',
       example: `class Account {
@@ -27,7 +30,7 @@ export function OOPPrinciplesSection() {
     },
     {
       title: 'Inheritance',
-      icon: '🌳',
+      icon: <FaTree className="w-10 h-10" />,
       color: 'green',
       description: 'Checking, Savings, and CD accounts extend the base Account class, inheriting common functionality while adding type-specific behavior.',
       example: `abstract class Account {
@@ -53,7 +56,7 @@ class CertificateOfDeposit extends Account {
     },
     {
       title: 'Polymorphism',
-      icon: '🎭',
+      icon: <GiTheaterCurtains className="w-10 h-10" />,
       color: 'purple',
       description: 'Bank stores accounts as the base Account type, allowing method calls to dynamically dispatch to the correct subclass implementation at runtime.',
       example: `class Bank {
@@ -73,7 +76,7 @@ class CertificateOfDeposit extends Account {
     },
     {
       title: 'Abstraction',
-      icon: '🎨',
+      icon: <MdPalette className="w-10 h-10" />,
       color: 'orange',
       description: 'Complex command validation logic is abstracted into separate validator classes, each responsible for validating one command type.',
       example: `class CommandValidation {
@@ -125,7 +128,7 @@ class DepositCommandValidator {
           return (
             <div key={i} className={`${colors.bg} border ${colors.border} rounded-xl p-6`}>
               <div className="flex items-start gap-4 mb-4">
-                <span className="text-4xl">{principle.icon}</span>
+                <div className={`${colors.text} mt-1`}>{principle.icon}</div>
                 <div className="flex-1">
                   <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2">
                     {principle.title}
