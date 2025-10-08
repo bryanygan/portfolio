@@ -9,7 +9,7 @@ export interface BankingSystemState {
   commandHistory: string[];
   output: string[];
   isProcessing: boolean;
-  updateCounter: number; // Forces re-render when bank state changes
+  error: string | null;
 }
 
 export function useBankingSystem() {
@@ -21,15 +21,14 @@ export function useBankingSystem() {
       commandHistory: [],
       output: [],
       isProcessing: false,
-      updateCounter: 0
+      error: null
     };
   });
 
   // Get all accounts as an array
-  // Use updateCounter to ensure we re-compute when bank state changes
   const accounts = useMemo(() => {
     return Array.from(state.bank.getAllAccounts().values());
-  }, [state.bank, state.updateCounter]);
+  }, [state.bank, state.output]);
 
   // Execute a single command
   const executeCommand = useCallback((command: string) => {
@@ -43,13 +42,15 @@ export function useBankingSystem() {
           commandHistory: [...prev.commandHistory, command],
           output: newOutput,
           isProcessing: false,
-          updateCounter: prev.updateCounter + 1
+          error: null
         };
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
         console.error('Error executing command:', error);
         return {
           ...prev,
-          isProcessing: false
+          isProcessing: false,
+          error: errorMessage
         };
       }
     });
@@ -67,13 +68,15 @@ export function useBankingSystem() {
           commandHistory: [...prev.commandHistory, ...commands],
           output: newOutput,
           isProcessing: false,
-          updateCounter: prev.updateCounter + 1
+          error: null
         };
       } catch (error) {
+        const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred executing batch';
         console.error('Error executing batch:', error);
         return {
           ...prev,
-          isProcessing: false
+          isProcessing: false,
+          error: errorMessage
         };
       }
     });
@@ -88,7 +91,7 @@ export function useBankingSystem() {
       commandHistory: [],
       output: [],
       isProcessing: false,
-      updateCounter: 0
+      error: null
     });
   }, []);
 
@@ -112,9 +115,13 @@ export function useBankingSystem() {
     const invalidCommands: string[] = [];
     let currentAccountId: string | null = null;
 
+    // Compile regex patterns once
+    const accountStateRegex = /^(Checking|Savings|Cd)\s+\d{8}/;
+    const transactionRegex = /^(create|deposit|withdraw|transfer|pass)/;
+
     state.output.forEach(line => {
       // Check if it's an account state line (starts with account type)
-      if (line.match(/^(Checking|Savings|Cd)\s+\d{8}/)) {
+      if (accountStateRegex.test(line)) {
         const parts = line.split(' ');
         currentAccountId = parts[1];
         accountOutputs.set(currentAccountId, {
@@ -123,7 +130,7 @@ export function useBankingSystem() {
         });
       }
       // Check if it's a transaction line (command)
-      else if (currentAccountId && line.match(/^(create|deposit|withdraw|transfer|pass)/)) {
+      else if (currentAccountId && transactionRegex.test(line)) {
         const accountOutput = accountOutputs.get(currentAccountId);
         if (accountOutput) {
           accountOutput.transactions.push(line);
@@ -147,6 +154,7 @@ export function useBankingSystem() {
     commandHistory: state.commandHistory,
     output: state.output,
     isProcessing: state.isProcessing,
+    error: state.error,
     accounts,
     parsedOutput,
 

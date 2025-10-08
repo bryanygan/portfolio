@@ -32,6 +32,21 @@ export function BankingSimulator() {
 
   return (
     <div className="w-full max-w-7xl mx-auto p-4 space-y-6">
+      {/* Error Display */}
+      {banking.error && (
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+          <div className="flex items-start gap-3">
+            <svg className="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            <div className="flex-1">
+              <h3 className="text-sm font-semibold text-red-900 dark:text-red-200">Error</h3>
+              <p className="text-sm text-red-800 dark:text-red-300 mt-1">{banking.error}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Header with Controls */}
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg">
         <div>
@@ -47,11 +62,18 @@ export function BankingSimulator() {
             onClick={handleReset}
             disabled={banking.isProcessing}
             className="px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-lg font-medium transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+            aria-label="Reset banking system"
           >
-            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
-            Reset
+            {banking.isProcessing ? (
+              <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            ) : (
+              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+            )}
+            {banking.isProcessing ? 'Processing...' : 'Reset'}
           </button>
           <div className="text-sm text-gray-600 dark:text-gray-400">
             {banking.accounts.length} account{banking.accounts.length !== 1 ? 's' : ''}
@@ -78,7 +100,7 @@ export function BankingSimulator() {
         {/* Right Column - Accounts & Transactions */}
         <div className="space-y-6">
           {/* View Toggle */}
-          <div className="flex gap-2 bg-gray-200 dark:bg-gray-700 p-1 rounded-lg">
+          <div className="flex gap-2 bg-gray-200 dark:bg-gray-700 p-1 rounded-lg" role="tablist">
             <button
               onClick={() => setActiveView('accounts')}
               className={`flex-1 py-2 px-4 rounded-md font-medium transition-colors duration-200 ${
@@ -86,6 +108,9 @@ export function BankingSimulator() {
                   ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
               }`}
+              role="tab"
+              aria-selected={activeView === 'accounts'}
+              aria-label="View accounts"
             >
               Accounts ({banking.accounts.length})
             </button>
@@ -96,6 +121,9 @@ export function BankingSimulator() {
                   ? 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow'
                   : 'text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white'
               }`}
+              role="tab"
+              aria-selected={activeView === 'output'}
+              aria-label="View output"
             >
               Output ({banking.output.length} lines)
             </button>
