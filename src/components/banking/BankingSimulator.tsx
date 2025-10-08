@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import { useBankingSystem } from '../../hooks/useBankingSystem';
 import { TerminalInput } from './TerminalInput';
 import { AccountCard } from './AccountCard';
@@ -11,7 +11,8 @@ export function BankingSimulator() {
   const [expandedAccountIds, setExpandedAccountIds] = useState<Set<string>>(new Set());
   const [activeView, setActiveView] = useState<'accounts' | 'output'>('accounts');
 
-  const toggleAccountDropdown = (accountId: string) => {
+  // Memoize toggle function to prevent recreating on every render
+  const toggleAccountDropdown = useCallback((accountId: string) => {
     setExpandedAccountIds(prev => {
       const newSet = new Set(prev);
       if (newSet.has(accountId)) {
@@ -21,14 +22,20 @@ export function BankingSimulator() {
       }
       return newSet;
     });
-  };
+  }, []);
 
-  const handleReset = () => {
+  // Memoize reset handler to prevent recreating on every render
+  const handleReset = useCallback(() => {
     if (confirm('Are you sure you want to reset the banking system? All accounts and history will be cleared.')) {
       banking.reset();
       setExpandedAccountIds(new Set());
     }
-  };
+  }, [banking.reset]);
+
+  // Memoize expensive total balance calculation
+  const totalBalance = useMemo(() => {
+    return banking.accounts.reduce((sum, acc) => sum + acc.getBalance(), 0);
+  }, [banking.accounts]);
 
   return (
     <div className="w-full max-w-7xl mx-auto p-4 space-y-6">
@@ -230,7 +237,7 @@ export function BankingSimulator() {
         </div>
         <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow">
           <div className="text-2xl font-bold text-purple-600 dark:text-purple-400">
-            ${banking.accounts.reduce((sum, acc) => sum + acc.getBalance(), 0).toFixed(2)}
+            ${totalBalance.toFixed(2)}
           </div>
           <div className="text-sm text-gray-600 dark:text-gray-400">Total Balance</div>
         </div>

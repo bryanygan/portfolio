@@ -1,8 +1,12 @@
-import React from 'react';
+import React, { useCallback } from 'react';
 
 interface OutputDisplayProps {
   output: string[];
 }
+
+// Move regex patterns outside component to avoid recreation
+const ACCOUNT_STATE_REGEX = /^(Checking|Savings|Cd)\s+\d{8}/;
+const TRANSACTION_REGEX = /^(create|deposit|withdraw|transfer|pass)/;
 
 export function OutputDisplay({ output }: OutputDisplayProps) {
   if (output.length === 0) {
@@ -19,15 +23,16 @@ export function OutputDisplay({ output }: OutputDisplayProps) {
     );
   }
 
-  const isAccountStateLine = (line: string): boolean => {
-    return /^(Checking|Savings|Cd)\s+\d{8}/.test(line);
-  };
+  // Memoize helper functions
+  const isAccountStateLine = useCallback((line: string): boolean => {
+    return ACCOUNT_STATE_REGEX.test(line);
+  }, []);
 
-  const isTransactionLine = (line: string): boolean => {
-    return /^(create|deposit|withdraw|transfer|pass)/.test(line);
-  };
+  const isTransactionLine = useCallback((line: string): boolean => {
+    return TRANSACTION_REGEX.test(line);
+  }, []);
 
-  const formatLine = (line: string, index: number) => {
+  const formatLine = useCallback((line: string, index: number) => {
     if (isAccountStateLine(line)) {
       return (
         <div key={index} className="flex items-start gap-3 mb-4">
@@ -65,7 +70,7 @@ export function OutputDisplay({ output }: OutputDisplayProps) {
         </div>
       </div>
     );
-  };
+  }, [isAccountStateLine, isTransactionLine]);
 
   return (
     <div className="bg-gray-900 rounded-lg shadow-2xl overflow-hidden">

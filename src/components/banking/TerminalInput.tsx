@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, type KeyboardEvent } from 'react';
+import React, { useState, useRef, useEffect, useCallback, useMemo, type KeyboardEvent } from 'react';
 import { COMMAND_TEMPLATES } from '../../../lib/banking/config/scenarios';
 
 interface TerminalInputProps {
@@ -13,9 +13,10 @@ export function TerminalInput({ onExecute, history, disabled = false }: Terminal
   const [suggestions, setSuggestions] = useState<string[]>([]);
   const [selectedSuggestionIndex, setSelectedSuggestionIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Generate command suggestions based on input
-  const generateSuggestions = (value: string): string[] => {
+  // Generate command suggestions based on input (memoized)
+  const generateSuggestions = useCallback((value: string): string[] => {
     if (!value.trim()) return [];
 
     const lowerValue = value.toLowerCase();
@@ -38,14 +39,33 @@ export function TerminalInput({ onExecute, history, disabled = false }: Terminal
     });
 
     return allSuggestions.slice(0, 5); // Limit to 5 suggestions
-  };
+  }, []);
 
-  const handleInputChange = (value: string) => {
+  // Debounced suggestion generation (300ms delay)
+  const handleInputChange = useCallback((value: string) => {
     setInput(value);
-    const newSuggestions = generateSuggestions(value);
-    setSuggestions(newSuggestions);
-    setSelectedSuggestionIndex(0);
-  };
+
+    // Clear existing debounce timer
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+
+    // Set new debounce timer for suggestion generation
+    debounceTimerRef.current = setTimeout(() => {
+      const newSuggestions = generateSuggestions(value);
+      setSuggestions(newSuggestions);
+      setSelectedSuggestionIndex(0);
+    }, 300);
+  }, [generateSuggestions]);
+
+  // Cleanup debounce timer on unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, []);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLInputElement>) => {
     // Enter - execute command or select suggestion
@@ -109,11 +129,11 @@ export function TerminalInput({ onExecute, history, disabled = false }: Terminal
     }
   };
 
-  const handleSuggestionClick = (suggestion: string) => {
+  const handleSuggestionClick = useCallback((suggestion: string) => {
     setInput(suggestion);
     setSuggestions([]);
     inputRef.current?.focus();
-  };
+  }, []);
 
   return (
     <div className="relative">

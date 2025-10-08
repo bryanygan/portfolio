@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import type { Account } from '../../../lib/banking/core/Account';
 import { AccountType } from '../../../lib/banking/types';
 import { FaRegCreditCard, FaPiggyBank, FaLock, FaDollarSign } from 'react-icons/fa';
@@ -9,14 +9,18 @@ interface AccountCardProps {
   selected?: boolean;
 }
 
-export function AccountCard({ account, onClick, selected = false }: AccountCardProps) {
-  const accountType = account.getType();
-  const balance = account.getBalance();
-  const apr = account.getAPR();
-  const accountId = account.getAccountID();
+const AccountCardComponent = ({ account, onClick, selected = false }: AccountCardProps) => {
+  // Memoize account data extraction to avoid recalculating on every render
+  const accountData = useMemo(() => ({
+    type: account.getType(),
+    balance: account.getBalance(),
+    apr: account.getAPR(),
+    id: account.getAccountID()
+  }), [account]);
 
   // Get styling based on account type
-  const getStyles = () => {
+  const styles = useMemo(() => {
+    const accountType = accountData.type;
     switch (accountType) {
       case AccountType.Checking:
         return {
@@ -43,9 +47,7 @@ export function AccountCard({ account, onClick, selected = false }: AccountCardP
           name: 'Account'
         };
     }
-  };
-
-  const styles = getStyles();
+  }, [accountData.type]);
 
   return (
     <div
@@ -65,14 +67,14 @@ export function AccountCard({ account, onClick, selected = false }: AccountCardP
             <span aria-label={styles.name}>{styles.icon}</span>
             <span className="text-sm font-medium opacity-90">{styles.name}</span>
           </div>
-          <div className="text-3xl font-bold" aria-label={`Balance: $${balance.toFixed(2)}`}>
-            ${balance.toFixed(2)}
+          <div className="text-3xl font-bold" aria-label={`Balance: $${accountData.balance.toFixed(2)}`}>
+            ${accountData.balance.toFixed(2)}
           </div>
         </div>
         <div className="flex flex-col items-end gap-2">
           <div className="text-right">
             <div className="text-xs opacity-75">APR</div>
-            <div className="text-lg font-semibold">{apr.toFixed(2)}%</div>
+            <div className="text-lg font-semibold">{accountData.apr.toFixed(2)}%</div>
           </div>
           {onClick && (
             <svg
@@ -88,8 +90,8 @@ export function AccountCard({ account, onClick, selected = false }: AccountCardP
       </div>
 
       {/* Account ID */}
-      <div className="text-sm opacity-90 font-mono" aria-label={`Account ID: ${accountId}`}>
-        ID: {accountId}
+      <div className="text-sm opacity-90 font-mono" aria-label={`Account ID: ${accountData.id}`}>
+        ID: {accountData.id}
       </div>
 
       {/* Decorative Elements */}
@@ -97,4 +99,15 @@ export function AccountCard({ account, onClick, selected = false }: AccountCardP
       <div className="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-5 rounded-full -ml-12 -mb-12" />
     </div>
   );
-}
+};
+
+// Memoize component to prevent re-renders when props haven't changed
+export const AccountCard = React.memo(AccountCardComponent, (prevProps, nextProps) => {
+  // Custom comparison function - only re-render if account data or selection state changes
+  return (
+    prevProps.account.getAccountID() === nextProps.account.getAccountID() &&
+    prevProps.account.getBalance() === nextProps.account.getBalance() &&
+    prevProps.account.getAPR() === nextProps.account.getAPR() &&
+    prevProps.selected === nextProps.selected
+  );
+});

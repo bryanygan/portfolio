@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import { EXAMPLE_SCENARIOS, type Scenario } from '../../../lib/banking/config/scenarios';
 
 interface ExampleScenariosProps {
@@ -9,14 +9,16 @@ interface ExampleScenariosProps {
 export function ExampleScenarios({ onLoadScenario, disabled = false }: ExampleScenariosProps) {
   const [expandedScenario, setExpandedScenario] = useState<string | null>(null);
 
-  const toggleScenario = (scenarioId: string) => {
+  // Memoize toggle function to prevent recreating on every render
+  const toggleScenario = useCallback((scenarioId: string) => {
     setExpandedScenario(prev => prev === scenarioId ? null : scenarioId);
-  };
+  }, []);
 
-  const handleLoadScenario = (scenario: Scenario) => {
+  // Memoize load handler to prevent recreating on every render
+  const handleLoadScenario = useCallback((scenario: Scenario) => {
     onLoadScenario(scenario.commands);
     setExpandedScenario(null);
-  };
+  }, [onLoadScenario]);
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg overflow-hidden">
