@@ -53,17 +53,22 @@ body {
   hyphens: auto;
 }
 
-/* Ensure containers don't overflow */
-.max-w-full {
-  max-width: 100% !important;
+/* Ensure containers don't overflow - bot simulator specific */
+.bot-simulator-container .max-w-full,
+.bot-simulator-chat .max-w-full,
+.bot-simulator-message .max-w-full {
+  max-width: 100%;
 }
 
-.min-w-0 {
-  min-width: 0 !important;
+.bot-simulator-container .min-w-0,
+.bot-simulator-chat .min-w-0,
+.bot-simulator-message .min-w-0 {
+  min-width: 0;
 }
 
-.overflow-hidden {
-  overflow: hidden !important;
+.bot-simulator-container .overflow-hidden,
+.bot-simulator-chat .overflow-hidden {
+  overflow: hidden;
 }
 
 /* Mobile-specific adjustments */
@@ -91,16 +96,18 @@ body {
   }
   
   /* Force proper text wrapping on mobile */
-  pre {
-    white-space: pre-wrap !important;
-    word-break: break-all !important;
-    overflow-wrap: anywhere !important;
+  .bot-simulator-code pre,
+  .bot-simulator-embed pre {
+    white-space: pre-wrap;
+    word-break: break-all;
+    overflow-wrap: anywhere;
   }
-  
-  code {
-    white-space: pre-wrap !important;
-    word-break: break-all !important;
-    overflow-wrap: anywhere !important;
+
+  .bot-simulator-code code,
+  .bot-simulator-embed code {
+    white-space: pre-wrap;
+    word-break: break-all;
+    overflow-wrap: anywhere;
   }
 }
 
@@ -132,16 +139,25 @@ body {
   }
   
   /* Extra aggressive text wrapping for very small screens */
-  * {
-    word-break: break-word !important;
-    overflow-wrap: anywhere !important;
+  p,
+  span,
+  div,
+  li,
+  td,
+  th {
+    word-break: break-word;
+    overflow-wrap: anywhere;
   }
 }
 
 /* High DPI displays */
 @media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
   /* Ensure crisp text rendering */
-  * {
+  body,
+  button,
+  input,
+  textarea,
+  select {
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -150,21 +166,27 @@ body {
 /* Landscape orientation on mobile */
 @media (max-width: 896px) and (orientation: landscape) {
   /* Reduce vertical padding in landscape mode */
-  .pt-20,
-  .pt-24,
-  .pt-32 {
-    padding-top: 1rem !important;
+  section.pt-20,
+  section.pt-24,
+  section.pt-32,
+  main.pt-20,
+  main.pt-24,
+  main.pt-32 {
+    padding-top: 1rem;
   }
-  
-  .pb-8,
-  .pb-12,
-  .pb-20 {
-    padding-bottom: 1rem !important;
+
+  section.pb-8,
+  section.pb-12,
+  section.pb-20,
+  main.pb-8,
+  main.pb-12,
+  main.pb-20 {
+    padding-bottom: 1rem;
   }
-  
+
   /* Optimize chat height for landscape */
-  .h-\[50vh\] {
-    height: 60vh !important;
+  .bot-simulator-chat.h-\[50vh\] {
+    height: 60vh;
   }
 }
 
@@ -176,9 +198,14 @@ input:focus-visible,
   outline-offset: 2px;
 }
 
-/* Smooth transitions for responsive changes */
-* {
-  transition: padding 0.2s ease, margin 0.2s ease, font-size 0.2s ease;
+/* Smooth transitions for interactive elements only */
+button,
+a,
+.card,
+input,
+textarea,
+select {
+  transition: transform 0.2s ease, opacity 0.2s ease, background-color 0.2s ease, color 0.2s ease;
 }
 
 /* Prevent horizontal scrolling on mobile */
