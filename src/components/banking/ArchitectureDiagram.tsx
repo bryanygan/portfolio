@@ -1,5 +1,3 @@
-import React from 'react';
-
 export function ArchitectureDiagram() {
   return (
     <div className="bg-white dark:bg-gray-800 rounded-xl p-8 shadow-lg">
