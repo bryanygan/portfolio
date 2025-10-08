@@ -11,7 +11,7 @@ export function ArchitectureDiagram() {
           <h3 className="font-bold text-xl text-gray-900 dark:text-white mb-4">UML Class Diagram</h3>
           <div className="flex justify-center">
             <img
-              src="/assets/images/banking-system/banking_system_UML_transparent.png"
+              src="/assets/images/banking-system/banking_system_UML_transparent.webp"
               alt="Banking System UML Class Diagram showing relationships between Account hierarchy, Bank repository, MasterControl, validators, and processors"
               className="max-w-full h-auto rounded-lg"
               loading="lazy"
