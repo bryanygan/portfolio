@@ -3,8 +3,10 @@ import { defineConfig } from 'astro/config';
 import react from '@astrojs/react';
 import tailwind from '@astrojs/tailwind';
 import cloudflare from '@astrojs/cloudflare';
+import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
+  site: 'https://bryangan.com',
   vite: {
     resolve: {
       alias: import.meta.env.PROD
@@ -16,7 +18,8 @@ export default defineConfig({
   },
   integrations: [
     react(),
-    tailwind()
+    tailwind(),
+    sitemap()
   ],
   output: 'server',
   adapter: cloudflare(),

@@ -14,6 +14,7 @@ export function ArchitectureDiagram() {
               src="/assets/images/banking-system/banking_system_UML_transparent.png"
               alt="Banking System UML Class Diagram showing relationships between Account hierarchy, Bank repository, MasterControl, validators, and processors"
               className="max-w-full h-auto rounded-lg"
+              loading="lazy"
             />
           </div>
         </div>

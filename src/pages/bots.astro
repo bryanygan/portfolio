@@ -42,14 +42,17 @@ const botProjects: BotProject[] = [
 ];
 ---
 
-<Layout title="Discord Bots | Bryan Gan">
+<Layout
+  title="Discord Bots | Bryan Gan"
+  description="Explore my Discord bot projects: Order Command Bot for food delivery automation, Promo Scraper for Gmail integration, and Point Tracker for community engagement. Built with Python, Node.js, and modern automation tools."
+>
   <Section id="bots" title="Discord Bots" subtitle="Bots and automation projects for Discord. Developed using AI tools to provide efficient solutions for my community.">
     <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
       {
         botProjects.map((project) => (
           <Card hover={true} class="overflow-hidden h-full flex flex-col">
             <div class="h-80 overflow-hidden">
-              <img src={project.image} alt={project.title} class="w-full h-full object-cover" />
+              <img src={project.image} alt={project.title} class="w-full h-full object-cover" loading="lazy" />
             </div>
             <div class="p-6 flex-grow flex flex-col">
               <h3 class="text-xl font-bold mb-2">{project.title}</h3>
