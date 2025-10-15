@@ -3,9 +3,9 @@
 
 <header class="fixed w-full bg-light-bg/80 dark:bg-dark-bg/80 backdrop-blur-md z-50 shadow-sm">
   <div class="container mx-auto px-4">
-    <nav class="flex justify-between items-center h-20">
+    <nav class="flex items-center justify-between h-20 relative">
       <!-- Logo -->
-      <a href="/" class="flex items-center space-x-2">
+      <a href="/" class="flex items-center space-x-2 relative z-10">
         <img src="/assets/svgs/logotransparentblue.png" alt="Bryan Gan" class="w-10 h-10 ">
 
       </a>
@@ -18,39 +18,34 @@
         <a href="/#contact" class="font-medium hover:text-primary transition-colors">Contact</a>
       </div>
 
-      <!-- Mobile center spacer (pushes buttons to center on mobile) -->
-      <div class="flex-1 md:hidden"></div>
+      <!-- Theme toggle button (centered on mobile) -->
+      <button
+        id="theme-toggle"
+        class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center justify-center absolute left-1/2 -translate-x-1/2 md:relative md:left-auto md:translate-x-0"
+        aria-label="Toggle dark mode"
+      >
+        <!-- Sun icon for dark mode -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden dark:block" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/>
+        </svg>
+        <!-- Moon icon for light mode -->
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 dark:hidden" viewBox="0 0 20 20" fill="currentColor">
+          <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
+        </svg>
+      </button>
 
-      <!-- Action buttons -->
-      <div class="flex items-center space-x-2">
-        <button
-          id="theme-toggle"
-          class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center justify-center"
-          aria-label="Toggle dark mode"
-        >
-          <!-- Sun icon for dark mode -->
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 hidden dark:block" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" clip-rule="evenodd"/>
-          </svg>
-          <!-- Moon icon for light mode -->
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 dark:hidden" viewBox="0 0 20 20" fill="currentColor">
-            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z" />
-          </svg>
-        </button>
-
-        <!-- Mobile menu button -->
-        <button
-          id="mobile-menu-toggle"
-          class="md:hidden p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center justify-center"
-          aria-label="Toggle mobile menu"
-          aria-expanded="false"
-          aria-controls="mobile-menu"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-      </div>
+      <!-- Mobile menu button (right side on mobile) -->
+      <button
+        id="mobile-menu-toggle"
+        class="md:hidden p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center justify-center relative z-10"
+        aria-label="Toggle mobile menu"
+        aria-expanded="false"
+        aria-controls="mobile-menu"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </button>
     </nav>
   </div>
 
@@ -86,5 +81,31 @@
         });
       });
     }
+
+    // Smooth scroll for all anchor links
+    document.querySelectorAll('a[href^="/#"], a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', function (e) {
+        const href = this.getAttribute('href');
+
+        // Skip if it's an external link or doesn't have a hash
+        if (!href || (!href.startsWith('#') && !href.startsWith('/#'))) return;
+
+        e.preventDefault();
+
+        // Extract the target ID (remove leading / and #)
+        const targetId = href.replace(/^\/?#/, '');
+        const targetElement = document.getElementById(targetId);
+
+        if (targetElement) {
+          targetElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+
+          // Update URL without page jump
+          history.pushState(null, '', href.startsWith('/') ? href : `/#${targetId}`);
+        }
+      });
+    });
   });
 </script> 
