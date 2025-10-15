@@ -90,13 +90,13 @@
         // Skip if it's an external link or doesn't have a hash
         if (!href || (!href.startsWith('#') && !href.startsWith('/#'))) return;
 
-        e.preventDefault();
-
         // Extract the target ID (remove leading / and #)
         const targetId = href.replace(/^\/?#/, '');
         const targetElement = document.getElementById(targetId);
 
-        if (targetElement) {
+        // If we're on homepage and element exists, smooth scroll
+        if (targetElement && (window.location.pathname === '/' || window.location.pathname === '')) {
+          e.preventDefault();
           targetElement.scrollIntoView({
             behavior: 'smooth',
             block: 'start'
@@ -105,7 +105,24 @@
           // Update URL without page jump
           history.pushState(null, '', href.startsWith('/') ? href : `/#${targetId}`);
         }
+        // Otherwise, let the browser navigate to homepage with hash (don't prevent default)
       });
     });
+
+    // Handle hash in URL on page load (for links from other pages)
+    if (window.location.hash) {
+      // Small delay to ensure page is fully loaded
+      setTimeout(() => {
+        const targetId = window.location.hash.substring(1);
+        const targetElement = document.getElementById(targetId);
+
+        if (targetElement) {
+          targetElement.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        }
+      }, 100);
+    }
   });
 </script> 

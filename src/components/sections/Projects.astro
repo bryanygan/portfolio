@@ -10,6 +10,7 @@ interface Project {
   tags: string[];
   liveUrl?: string;
   repoUrl?: string;
+  demoUrl?: string;
   isInternal?: boolean;
 }
 
@@ -29,6 +30,7 @@ const projects: Project[] = [
     image: '/assets/images/projects/discbot.webp',
     tags: ['JavaScript', 'Node.js', 'Python', 'Databases', 'HTML'],
     liveUrl: 'https://bryangan.com/bots',
+    demoUrl: '/bot-simulator',
     isInternal: true,
   },
   {
@@ -65,10 +67,15 @@ const projects: Project[] = [
                 ))}
               </div>
               
-              <div class="flex gap-3">
+              <div class="flex gap-3 flex-wrap">
                 {project.liveUrl && (
                   <Button href={project.liveUrl} variant="outline" target={project.isInternal ? undefined : "_blank"} size="lg">
                     View Project
+                  </Button>
+                )}
+                {project.demoUrl && (
+                  <Button href={project.demoUrl} variant="outline" size="lg">
+                    Interactive Demo
                   </Button>
                 )}
                 {project.repoUrl && (

@@ -11,6 +11,7 @@ interface BotProject {
   tags: string[];
   liveUrl?: string;
   repoUrl?: string;
+  demoUrl?: string;
 }
 
 const botProjects: BotProject[] = [
@@ -20,7 +21,8 @@ const botProjects: BotProject[] = [
     image: '/assets/images/projects/combinedbot.webp',
     tags: ['Python', 'discord.py', 'SQLite'],
     liveUrl: 'https://discord.com/oauth2/authorize?client_id=1378859639789322240',
-    repoUrl: 'https://github.com/bryanygan/zreatsbot'
+    repoUrl: 'https://github.com/bryanygan/zreatsbot',
+    demoUrl: '/bot-simulator'
   },
   {
     title: 'Promo Scraper',
@@ -67,8 +69,13 @@ const botProjects: BotProject[] = [
                   ))}
                 </div>
                 
-                <div class="flex gap-3">
-                {project.repoUrl && (
+                <div class="flex gap-3 flex-wrap">
+                  {project.demoUrl && (
+                    <Button href={project.demoUrl} variant="primary" size="lg">
+                      Interactive Demo
+                    </Button>
+                  )}
+                  {project.repoUrl && (
                     <Button href={project.repoUrl} target="_blank" variant="outline" size="lg">
                       GitHub
                     </Button>
@@ -78,7 +85,6 @@ const botProjects: BotProject[] = [
                       Discord Invite
                     </Button>
                   )}
-
                 </div>
               </div>
             </div>
