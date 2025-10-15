@@ -8,6 +8,10 @@ import sitemap from '@astrojs/sitemap';
 export default defineConfig({
   site: 'https://bryangan.com',
   vite: {
+    server: {
+      host: true,
+      allowedHosts: ['.ngrok-free.app', '.ngrok.io'],
+    },
     resolve: {
       alias: import.meta.env.PROD
         ? {

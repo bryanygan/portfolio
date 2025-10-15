@@ -7,7 +7,7 @@
       <!-- Logo -->
       <a href="/" class="flex items-center space-x-2">
         <img src="/assets/svgs/logotransparentblue.png" alt="Bryan Gan" class="w-10 h-10 ">
-       
+
       </a>
 
       <!-- Desktop Menu -->
@@ -17,10 +17,15 @@
         <a href="/#experience" class="font-medium hover:text-primary transition-colors">Experience</a>
         <a href="/#contact" class="font-medium hover:text-primary transition-colors">Contact</a>
       </div>
-      
-        <button 
-          id="theme-toggle" 
-          class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+
+      <!-- Mobile center spacer (pushes buttons to center on mobile) -->
+      <div class="flex-1 md:hidden"></div>
+
+      <!-- Action buttons -->
+      <div class="flex items-center space-x-2">
+        <button
+          id="theme-toggle"
+          class="p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center justify-center"
           aria-label="Toggle dark mode"
         >
           <!-- Sun icon for dark mode -->
@@ -36,7 +41,7 @@
         <!-- Mobile menu button -->
         <button
           id="mobile-menu-toggle"
-          class="md:hidden p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+          class="md:hidden p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors flex items-center justify-center"
           aria-label="Toggle mobile menu"
           aria-expanded="false"
           aria-controls="mobile-menu"
