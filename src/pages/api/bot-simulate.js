@@ -787,20 +787,20 @@ function handleVcc(params, pools, userId) {
 
 function handlePayments() {
   const embed = {
-    title: "Prin's Payments",
-    description: 'Select which payment method you would like to use! (Zelle/Crypto is preferred)',
+    title: "Demo Payment Methods",
+    description: '⚠️ DEMO ONLY - This is a simulation. All payment information is placeholder data.',
     color: '#9932cc',
     fields: [
-      { name: '🏦 Zelle', value: 'Email: `ganbryanbts@gmail.com`\nName: **Bryan Gan**' },
-      { name: '💙 Venmo', value: 'Username: `@BGHype`\nFriends & Family, single emoji note only\nLast 4: **0054**' },
-      { name: '💚 PayPal', value: 'Email: `ganbryanbts@gmail.com`\nFriends & Family, no notes' },
-      { name: '💵 CashApp', value: 'CashTag: `$bygan`\nMust be from balance, single emoji note only' },
-      { name: '🪙 Crypto', value: 'Available: ETH, LTC, SOL, BTC, USDT, USDC\nMessage for wallet addresses' }
+      { name: '🏦 Zelle', value: 'Email: `contact@example.com`\nName: **Demo User**' },
+      { name: '💙 Venmo', value: 'Username: `@demo-user`\nFriends & Family, single emoji note only\nLast 4: **0000**' },
+      { name: '💚 PayPal', value: 'Email: `payments@example.com`\nFriends & Family, no notes' },
+      { name: '💵 CashApp', value: 'CashTag: `$demouser`\nMust be from balance, single emoji note only' },
+      { name: '🪙 Crypto', value: 'Available: ETH, LTC, SOL, BTC, USDT, USDC\n⚠️ Demo addresses only - do not send real funds' }
     ]
   };
 
   return {
-    response: '💳 Payment methods displayed!',
+    response: '💳 Payment methods displayed! (Demo data only)',
     embed
   };
 }
