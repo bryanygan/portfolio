@@ -1,6 +1,20 @@
+// ===== RATE LIMITING CONFIGURATION =====
 const RATE_LIMIT_WINDOW_MS = 60 * 1000; // 1 minute
-const RATE_LIMIT_MAX_REQUESTS = 5;
-const rateLimitStore = new Map();
+const RATE_LIMIT_MAX_REQUESTS = 5; // General requests per window
+const RATE_LIMIT_BULK_WINDOW_MS = 5 * 60 * 1000; // 5 minutes for bulk operations
+const RATE_LIMIT_MAX_BULK_OPERATIONS = 3; // Max bulk operations per 5 min
+
+// Per-operation limits
+const OPERATION_LIMITS = {
+  BULK_CARDS_MAX: 50, // Max cards per bulk import
+  BULK_EMAILS_MAX: 100, // Max emails per bulk import
+  BULK_REMOVE_MAX: 50, // Max items to remove per bulk operation
+};
+
+// Rate limit stores
+const rateLimitStore = new Map(); // IP-based general limits
+const bulkOperationStore = new Map(); // Track bulk operations
+const violationStore = new Map(); // Track repeated violations for exponential backoff
 
 // Configurable constants
 const CONFIG = {
@@ -10,21 +24,134 @@ const CONFIG = {
   AUTHORIZED_USER_ID: '745694160002089130' // Mock authorized user
 };
 
-function isRateLimited(ip) {
+// Enhanced rate limiting with violation tracking
+function isRateLimited(identifier) {
   const now = Date.now();
-  let record = rateLimitStore.get(ip);
+
+  // Check for active penalty (exponential backoff)
+  const violation = violationStore.get(identifier);
+  if (violation && now < violation.penaltyUntil) {
+    return {
+      limited: true,
+      retryAfter: Math.ceil((violation.penaltyUntil - now) / 1000),
+      reason: 'Rate limit penalty active due to repeated violations'
+    };
+  }
+
+  let record = rateLimitStore.get(identifier);
   if (!record) {
     record = { count: 1, start: now };
-    rateLimitStore.set(ip, record);
-    return false;
+    rateLimitStore.set(identifier, record);
+    return { limited: false };
   }
+
+  // Reset window if expired
   if (now - record.start > RATE_LIMIT_WINDOW_MS) {
     record.count = 1;
     record.start = now;
-    return false;
+    rateLimitStore.set(identifier, record);
+    return { limited: false };
   }
+
   record.count += 1;
-  return record.count > RATE_LIMIT_MAX_REQUESTS;
+  rateLimitStore.set(identifier, record);
+
+  if (record.count > RATE_LIMIT_MAX_REQUESTS) {
+    // Track violation for exponential backoff
+    trackViolation(identifier);
+
+    return {
+      limited: true,
+      retryAfter: Math.ceil((RATE_LIMIT_WINDOW_MS - (now - record.start)) / 1000),
+      reason: 'Too many requests'
+    };
+  }
+
+  return { limited: false };
+}
+
+// Track violations for exponential backoff
+function trackViolation(identifier) {
+  const now = Date.now();
+  let violation = violationStore.get(identifier);
+
+  if (!violation) {
+    violation = { count: 1, firstViolation: now, penaltyUntil: 0 };
+  } else {
+    // Reset if last violation was more than 1 hour ago
+    if (now - violation.firstViolation > 60 * 60 * 1000) {
+      violation = { count: 1, firstViolation: now, penaltyUntil: 0 };
+    } else {
+      violation.count += 1;
+    }
+  }
+
+  // Apply exponential backoff: 2^(violations-1) minutes
+  const penaltyMinutes = Math.min(Math.pow(2, violation.count - 1), 60); // Cap at 60 min
+  violation.penaltyUntil = now + (penaltyMinutes * 60 * 1000);
+
+  violationStore.set(identifier, violation);
+}
+
+// Check bulk operation rate limit
+function isBulkOperationLimited(identifier) {
+  const now = Date.now();
+  let record = bulkOperationStore.get(identifier);
+
+  if (!record) {
+    record = { count: 1, start: now };
+    bulkOperationStore.set(identifier, record);
+    return { limited: false };
+  }
+
+  // Reset window if expired
+  if (now - record.start > RATE_LIMIT_BULK_WINDOW_MS) {
+    record.count = 1;
+    record.start = now;
+    bulkOperationStore.set(identifier, record);
+    return { limited: false };
+  }
+
+  record.count += 1;
+  bulkOperationStore.set(identifier, record);
+
+  if (record.count > RATE_LIMIT_MAX_BULK_OPERATIONS) {
+    return {
+      limited: true,
+      retryAfter: Math.ceil((RATE_LIMIT_BULK_WINDOW_MS - (now - record.start)) / 1000),
+      reason: `Too many bulk operations (max ${RATE_LIMIT_MAX_BULK_OPERATIONS} per 5 minutes)`
+    };
+  }
+
+  return { limited: false };
+}
+
+// Validate operation item count limits
+function validateOperationLimit(operation, count) {
+  let limit;
+
+  switch (operation) {
+    case 'bulk_cards':
+      limit = OPERATION_LIMITS.BULK_CARDS_MAX;
+      break;
+    case 'bulk_emails':
+      limit = OPERATION_LIMITS.BULK_EMAILS_MAX;
+      break;
+    case 'bulk_remove':
+      limit = OPERATION_LIMITS.BULK_REMOVE_MAX;
+      break;
+    default:
+      return { valid: true };
+  }
+
+  if (count > limit) {
+    return {
+      valid: false,
+      message: `Operation exceeds limit: ${count} items (max ${limit} per request)`
+    };
+  }
+
+  return { valid: true };
 }
 
 // Simple mock authorization
@@ -36,13 +163,71 @@ function isAuthorized(userId) {
 // This makes this specific route server-rendered
 export const prerender = false;
 
-export async function POST({ request }) {
+export async function POST({ request, clientAddress }) {
   try {
     const { command, params = {}, pools, userId } = await request.json();
+
+    // Create identifier for rate limiting (prefer userId, fallback to IP)
+    const identifier = userId || clientAddress || 'unknown';
+
+    // Apply general rate limiting
+    const rateLimit = isRateLimited(identifier);
+    if (rateLimit.limited) {
+      return new Response(JSON.stringify({
+        response: `❌ ${rateLimit.reason}`,
+        error: {
+          type: 'RATE_LIMIT_EXCEEDED',
+          retryAfter: rateLimit.retryAfter,
+          message: rateLimit.reason
+        }
+      }), {
+        status: 429,
+        headers: {
+          'Content-Type': 'application/json',
+          'Retry-After': rateLimit.retryAfter.toString(),
+          'X-RateLimit-Limit': RATE_LIMIT_MAX_REQUESTS.toString(),
+          'X-RateLimit-Remaining': '0',
+          'X-RateLimit-Reset': Math.ceil(Date.now() / 1000 + rateLimit.retryAfter).toString()
+        }
+      });
+    }
 
     // Parse command
     const commandParts = command.trim().split(' ');
     const commandName = commandParts[0].toLowerCase();
+
+    // Check if this is a bulk operation
+    const isBulkOperation = [
+      '/bulk_cards',
+      '/bulk_emails_main',
+      '/bulk_emails_pump20',
+      '/bulk_emails_pump25',
+      '/remove_bulk_cards',
+      '/remove_bulk_emails'
+    ].includes(commandName);
+
+    // Apply additional bulk operation limits
+    if (isBulkOperation) {
+      const bulkLimit = isBulkOperationLimited(identifier);
+      if (bulkLimit.limited) {
+        return new Response(JSON.stringify({
+          response: `❌ ${bulkLimit.reason}`,
+          error: {
+            type: 'BULK_OPERATION_LIMIT_EXCEEDED',
+            retryAfter: bulkLimit.retryAfter,
+            message: bulkLimit.reason
+          }
+        }), {
+          status: 429,
+          headers: {
+            'Content-Type': 'application/json',
+            'Retry-After': bulkLimit.retryAfter.toString(),
+            'X-RateLimit-Type': 'bulk-operation',
+            'X-RateLimit-Limit': RATE_LIMIT_MAX_BULK_OPERATIONS.toString()
+          }
+        });
+      }
+    }
 
     let response = '';
     let embed = null;
@@ -1104,6 +1289,24 @@ function handleBulkCards(params, pools, userId) {
     lines = lines.slice(1);
   }
 
+  // Validate operation limit
+  const limitCheck = validateOperationLimit('bulk_cards', lines.length);
+  if (!limitCheck.valid) {
+    return {
+      response: `❌ ${limitCheck.message}`,
+      embed: {
+        title: 'Bulk Operation Limit Exceeded',
+        color: '#ff0000',
+        description: limitCheck.message,
+        fields: [
+          { name: 'Items in file', value: lines.length.toString(), inline: true },
+          { name: 'Max allowed', value: OPERATION_LIMITS.BULK_CARDS_MAX.toString(), inline: true }
+        ]
+      },
+      updatedPools: pools
+    };
+  }
+
   const results = {
     added: 0,
     duplicates: 0,
@@ -1239,6 +1442,24 @@ function handleBulkEmails(commandName, params, pools, userId) {
   const fileContent = params.file.content || '';
   const lines = fileContent.split('\n').map(line => line.trim()).filter(line => line);
 
+  // Validate operation limit
+  const limitCheck = validateOperationLimit('bulk_emails', lines.length);
+  if (!limitCheck.valid) {
+    return {
+      response: `❌ ${limitCheck.message}`,
+      embed: {
+        title: 'Bulk Operation Limit Exceeded',
+        color: '#ff0000',
+        description: limitCheck.message,
+        fields: [
+          { name: 'Items in file', value: lines.length.toString(), inline: true },
+          { name: 'Max allowed', value: OPERATION_LIMITS.BULK_EMAILS_MAX.toString(), inline: true }
+        ]
+      },
+      updatedPools: pools
+    };
+  }
+
   const results = {
     added: 0,
     duplicates: 0,
@@ -1329,6 +1550,24 @@ function handleRemoveBulkCards(params, pools, userId) {
 
   const fileContent = params.file.content || '';
   const lines = fileContent.split('\n').map(line => line.trim()).filter(line => line);
+
+  // Validate operation limit
+  const limitCheck = validateOperationLimit('bulk_remove', lines.length);
+  if (!limitCheck.valid) {
+    return {
+      response: `❌ ${limitCheck.message}`,
+      embed: {
+        title: 'Bulk Operation Limit Exceeded',
+        color: '#ff0000',
+        description: limitCheck.message,
+        fields: [
+          { name: 'Items in file', value: lines.length.toString(), inline: true },
+          { name: 'Max allowed', value: OPERATION_LIMITS.BULK_REMOVE_MAX.toString(), inline: true }
+        ]
+      },
+      updatedPools: pools
+    };
+  }
 
   const results = {
     removed: 0,
@@ -1444,6 +1683,24 @@ function handleRemoveBulkEmails(params, pools, userId) {
   pools = normalizeEmailPools(pools);
   const fileContent = params.file.content || '';
   const lines = fileContent.split('\n').map(line => line.trim()).filter(line => line);
+
+  // Validate operation limit
+  const limitCheck = validateOperationLimit('bulk_remove', lines.length);
+  if (!limitCheck.valid) {
+    return {
+      response: `❌ ${limitCheck.message}`,
+      embed: {
+        title: 'Bulk Operation Limit Exceeded',
+        color: '#ff0000',
+        description: limitCheck.message,
+        fields: [
+          { name: 'Items in file', value: lines.length.toString(), inline: true },
+          { name: 'Max allowed', value: OPERATION_LIMITS.BULK_REMOVE_MAX.toString(), inline: true }
+        ]
+      },
+      updatedPools: pools
+    };
+  }
 
   const results = {
     removed: 0,
