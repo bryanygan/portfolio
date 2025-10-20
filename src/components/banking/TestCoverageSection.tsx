@@ -44,7 +44,7 @@ export function TestCoverageSection() {
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-700 dark:text-gray-300">Core Banking Logic</span>
-              <span className="font-mono text-sm font-bold text-green-600 dark:text-green-400">112 tests</span>
+              <span className="font-mono text-sm font-bold text-green-600 dark:text-green-400">112 of 151 tests</span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
               <div className="bg-green-500 h-2 rounded-full" style={{ width: '74%' }}></div>
@@ -54,7 +54,7 @@ export function TestCoverageSection() {
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-700 dark:text-gray-300">Integration Tests</span>
-              <span className="font-mono text-sm font-bold text-blue-600 dark:text-blue-400">25 tests</span>
+              <span className="font-mono text-sm font-bold text-blue-600 dark:text-blue-400">25 of 151 tests</span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
               <div className="bg-blue-500 h-2 rounded-full" style={{ width: '17%' }}></div>
@@ -64,7 +64,7 @@ export function TestCoverageSection() {
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-700 dark:text-gray-300">Hook Logic Tests</span>
-              <span className="font-mono text-sm font-bold text-purple-600 dark:text-purple-400">9 tests</span>
+              <span className="font-mono text-sm font-bold text-purple-600 dark:text-purple-400">9 of 151 tests</span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
               <div className="bg-purple-500 h-2 rounded-full" style={{ width: '6%' }}></div>
@@ -74,7 +74,7 @@ export function TestCoverageSection() {
           <div className="space-y-3">
             <div className="flex justify-between items-center">
               <span className="text-sm text-gray-700 dark:text-gray-300">Reactivity Tests</span>
-              <span className="font-mono text-sm font-bold text-orange-600 dark:text-orange-400">5 tests</span>
+              <span className="font-mono text-sm font-bold text-orange-600 dark:text-orange-400">5 of 151 tests</span>
             </div>
             <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
               <div className="bg-orange-500 h-2 rounded-full" style={{ width: '3%' }}></div>
