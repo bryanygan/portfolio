@@ -252,9 +252,16 @@ const description = 'Real-time status monitoring for Discord bot operations';
 
   // Start uptime ticker
   function startUptimeTicker() {
-    // Clear any existing ticker
+    // Clear any existing ticker to prevent multiple intervals
     if (uptimeInterval) {
       clearInterval(uptimeInterval);
+      uptimeInterval = null;
+    }
+
+    // Only start if we have a valid start time
+    if (!botStartTime || isNaN(botStartTime.getTime())) {
+      console.error('[Bot Status] Invalid bot start time, cannot start ticker');
+      return;
     }
 
     // Update immediately
@@ -262,6 +269,7 @@ const description = 'Real-time status monitoring for Discord bot operations';
 
     // Then update every second
     uptimeInterval = setInterval(updateUptimeDisplay, 1000);
+    console.log('[Bot Status] Uptime ticker started');
   }
 
   // Fetch status data
@@ -282,7 +290,15 @@ const description = 'Real-time status monitoring for Discord bot operations';
 
       // Store bot start time and start ticker
       if (data.uptime && data.uptime.start_time) {
-        botStartTime = new Date(data.uptime.start_time);
+        // Parse the start time - handle both ISO format and timestamp
+        const startTimeValue = data.uptime.start_time;
+        botStartTime = typeof startTimeValue === 'number'
+          ? new Date(startTimeValue * 1000) // Unix timestamp
+          : new Date(startTimeValue); // ISO string
+
+        console.log('[Bot Status] Bot start time:', botStartTime.toISOString());
+        console.log('[Bot Status] Current time:', new Date().toISOString());
+
         document.getElementById('start-time')!.textContent = botStartTime.toLocaleString();
         startUptimeTicker();
       }
