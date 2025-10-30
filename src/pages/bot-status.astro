@@ -94,7 +94,7 @@ const description = 'Real-time status monitoring for Discord bot operations';
       </div>
 
       <!-- Control Panel -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+      <div id="control-panel" class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700 hidden">
         <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Control Panel</h3>
 
         <div class="space-y-4">
@@ -163,6 +163,33 @@ const description = 'Real-time status monitoring for Discord bot operations';
         </div>
       </div>
 
+      <!-- Private View Unlock -->
+      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700">
+        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Private View</h3>
+        <div class="flex gap-4 items-end">
+          <div class="flex-1">
+            <label for="pin-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+              Enter PIN to unlock full access
+            </label>
+            <input
+              type="password"
+              id="pin-input"
+              placeholder="Enter PIN code"
+              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary dark:focus:ring-sky-500"
+            />
+          </div>
+          <button
+            id="unlock-btn"
+            class="px-6 py-2 bg-primary dark:bg-sky-600 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-sky-700 transition-colors font-semibold"
+          >
+            Unlock
+          </button>
+        </div>
+        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
+          Private view reveals full usernames, channels, emails, and enables the control panel.
+        </p>
+      </div>
+
     </div>
   </Section>
 </Layout>
@@ -170,9 +197,11 @@ const description = 'Real-time status monitoring for Discord bot operations';
 <script>
   // Configuration - Default to Railway production URL
   const DEFAULT_API_URL = 'https://zreatsbot-production.up.railway.app';
+  const PRIVATE_PIN = '44275';
   let API_URL = '';
   let API_KEY = '';
   let eventSource: EventSource | null = null;
+  let isPrivateView = false;
 
   // Uptime tracking
   let botStartTime: Date | null = null;
@@ -273,6 +302,33 @@ const description = 'Real-time status monitoring for Discord bot operations';
     console.log('[Bot Status] Uptime ticker started');
   }
 
+  // Privacy masking functions
+  function maskEmail(email: string): string {
+    if (isPrivateView) return email;
+
+    const [localPart, domain] = email.split('@');
+    if (!domain) return email; // Invalid email format
+
+    const halfLength = Math.ceil(localPart.length / 2);
+    const masked = localPart.substring(0, halfLength) + '*****';
+    return `${masked}@${domain}`;
+  }
+
+  function maskText(text: string): string {
+    if (isPrivateView) return text;
+
+    const halfLength = Math.ceil(text.length / 2);
+    return text.substring(0, halfLength) + '*****';
+  }
+
+  function parseTimestamp(timestamp: string): Date {
+    // If timestamp doesn't end with 'Z', treat it as UTC
+    if (!timestamp.endsWith('Z') && !timestamp.includes('+')) {
+      return new Date(timestamp + 'Z');
+    }
+    return new Date(timestamp);
+  }
+
   // Fetch status data
   async function fetchStatus() {
     if (!API_URL) return;
@@ -365,15 +421,18 @@ const description = 'Real-time status monitoring for Discord bot operations';
       const container = document.getElementById('logs-container')!;
 
       if (data.success && data.logs.length > 0) {
-        container.innerHTML = data.logs.map((log: any) => `
-          <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
-            <div class="flex justify-between items-start">
-              <span class="font-medium text-gray-900 dark:text-white">${log.command_type}</span>
-              <span class="text-xs text-gray-500 dark:text-gray-400">${new Date(log.timestamp).toLocaleString()}</span>
+        container.innerHTML = data.logs.map((log: any) => {
+          const timestamp = parseTimestamp(log.timestamp);
+          return `
+            <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
+              <div class="flex justify-between items-start">
+                <span class="font-medium text-gray-900 dark:text-white">${log.command_type}</span>
+                <span class="text-xs text-gray-500 dark:text-gray-400">${timestamp.toLocaleString()}</span>
+              </div>
+              ${log.email_used ? `<p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Email: ${maskEmail(log.email_used)} (${log.email_pool})</p>` : ''}
             </div>
-            ${log.email_used ? `<p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Email: ${log.email_used} (${log.email_pool})</p>` : ''}
-          </div>
-        `).join('');
+          `;
+        }).join('');
       } else {
         container.innerHTML = '<p class="text-gray-600 dark:text-gray-400">No logs available</p>';
       }
@@ -385,6 +444,7 @@ const description = 'Real-time status monitoring for Discord bot operations';
   // Update last command display
   function updateLastCommand(command: any) {
     const container = document.getElementById('last-command-content')!;
+    const timestamp = parseTimestamp(command.timestamp);
     container.innerHTML = `
       <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
         <div>
@@ -393,15 +453,15 @@ const description = 'Real-time status monitoring for Discord bot operations';
         </div>
         <div>
           <p class="text-xs text-gray-500 dark:text-gray-400">User</p>
-          <p class="font-semibold text-gray-900 dark:text-white">${command.user}</p>
+          <p class="font-semibold text-gray-900 dark:text-white">${maskText(command.user)}</p>
         </div>
         <div>
           <p class="text-xs text-gray-500 dark:text-gray-400">Channel</p>
-          <p class="font-semibold text-gray-900 dark:text-white">${command.channel}</p>
+          <p class="font-semibold text-gray-900 dark:text-white">${maskText(command.channel)}</p>
         </div>
         <div>
           <p class="text-xs text-gray-500 dark:text-gray-400">Time</p>
-          <p class="font-semibold text-gray-900 dark:text-white">${new Date(command.timestamp).toLocaleTimeString()}</p>
+          <p class="font-semibold text-gray-900 dark:text-white">${timestamp.toLocaleString()}</p>
         </div>
       </div>
     `;
@@ -533,10 +593,50 @@ const description = 'Real-time status monitoring for Discord bot operations';
     alert(message);
   }
 
+  // Toggle private view
+  function togglePrivateView() {
+    const pinInput = document.getElementById('pin-input') as HTMLInputElement;
+    const enteredPin = pinInput.value.trim();
+
+    if (enteredPin === PRIVATE_PIN) {
+      isPrivateView = true;
+      updateControlPanelVisibility();
+      // Refresh all data to show unmasked values
+      fetchAllData();
+      showSuccess('Private view enabled');
+      pinInput.value = ''; // Clear pin
+    } else {
+      isPrivateView = false;
+      updateControlPanelVisibility();
+      // Refresh all data to show masked values
+      fetchAllData();
+      if (enteredPin !== '') {
+        showError('Invalid PIN');
+        pinInput.value = '';
+      }
+    }
+  }
+
+  // Update control panel visibility
+  function updateControlPanelVisibility() {
+    const controlPanel = document.getElementById('control-panel')!;
+    if (isPrivateView) {
+      controlPanel.classList.remove('hidden');
+    } else {
+      controlPanel.classList.add('hidden');
+    }
+  }
+
   // Event listeners
   document.getElementById('save-config-btn')?.addEventListener('click', saveConfig);
   document.getElementById('restart-btn')?.addEventListener('click', restartBot);
   document.getElementById('refresh-logs')?.addEventListener('click', fetchLogs);
+  document.getElementById('unlock-btn')?.addEventListener('click', togglePrivateView);
+  document.getElementById('pin-input')?.addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      togglePrivateView();
+    }
+  });
 
   // Initialize on page load
   loadConfig();
