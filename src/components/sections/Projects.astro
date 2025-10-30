@@ -25,6 +25,14 @@ const projects: Project[] = [
     isInternal: true,
   },
   {
+    title: 'MunchMatch',
+    description: 'Built a responsive web app that recommends meals based on user flavor preferences, contributing to both front-end design and Agile team development.',
+    image: '/assets/images/projects/munchmatch.webp',
+    tags: ['HTML', 'CSS', 'JavaScript', 'GitLab', 'Agile'],
+    liveUrl: 'https://munchmatch.bryangan.com',
+    repoUrl: 'https://github.com/bryanygan/munchmatch'
+  },
+  {
     title: 'Discord Bots',
     description: 'Developed a suite of Discord automation bots designed for community management and workflow optimization: email/promo scraping, point tracking, channel status management, and streamlined food ordering with payment processing.',
     image: '/assets/images/projects/discbot.webp',
@@ -34,20 +42,18 @@ const projects: Project[] = [
     isInternal: true,
   },
   {
-    title: 'MunchMatch',
-    description: 'Built a responsive web app that recommends meals based on user flavor preferences, contributing to both front-end design and Agile team development.',
-    image: '/assets/images/projects/munchmatch.webp',
-    tags: ['HTML', 'CSS', 'JavaScript', 'GitLab', 'Agile'],
-    liveUrl: 'https://munchmatch.bryangan.com',
-    repoUrl: 'https://github.com/bryanygan/munchmatch'
-
-
+    title: 'Crazy8s',
+    description: 'Real-time multiplayer card game with advanced sequential stacking mechanics, tournament elimination format, and robust reconnection system. Features JWT authentication, 95%+ test coverage, and support for 2-4 players with sophisticated turn control simulation.',
+    image: '/assets/images/projects/crazy8s.webp',
+    tags: ['React', 'Node.js', 'Express', 'Socket.IO', 'MongoDB', 'PostgreSQL', 'JWT'],
+    liveUrl: 'https://crazy8s.me/',
+    repoUrl: 'https://github.com/bryanygan/crazy8s'
   }
 ];
 ---
 
 <Section id="projects" title="Projects" subtitle="My best recent work and projects.">
-  <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+  <div class="grid md:grid-cols-2 lg:grid-cols-2 gap-6">
     {
       projects.map((project) => (
         <Card hover={true} class="overflow-hidden h-full flex flex-col">
