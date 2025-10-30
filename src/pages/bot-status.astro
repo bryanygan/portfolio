@@ -176,6 +176,8 @@ const description = 'Real-time status monitoring for Discord bot operations';
 
   // Uptime tracking
   let botStartTime: Date | null = null;
+  let uptimeSecondsBase: number = 0; // Uptime in seconds from API
+  let lastFetchTime: Date | null = null; // When we last fetched from API
   let uptimeInterval: number | null = null;
 
   // Load configuration from localStorage
@@ -219,15 +221,12 @@ const description = 'Real-time status monitoring for Discord bot operations';
     fetchAllData();
   }
 
-  // Format uptime duration
-  function formatUptime(startTime: Date): string {
-    const now = new Date();
-    const diffMs = now.getTime() - startTime.getTime();
-
-    const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-    const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-    const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-    const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+  // Format uptime duration from seconds
+  function formatUptimeFromSeconds(totalSeconds: number): string {
+    const days = Math.floor(totalSeconds / (60 * 60 * 24));
+    const hours = Math.floor((totalSeconds % (60 * 60 * 24)) / (60 * 60));
+    const minutes = Math.floor((totalSeconds % (60 * 60)) / 60);
+    const seconds = Math.floor(totalSeconds % 60);
 
     if (days > 0) {
       return `${days}d ${hours}h ${minutes}m ${seconds}s`;
@@ -240,13 +239,21 @@ const description = 'Real-time status monitoring for Discord bot operations';
     }
   }
 
+  // Calculate current uptime (base from API + elapsed time since fetch)
+  function getCurrentUptimeSeconds(): number {
+    if (!lastFetchTime) return uptimeSecondsBase;
+
+    const now = new Date();
+    const elapsedSinceFetch = (now.getTime() - lastFetchTime.getTime()) / 1000;
+    return uptimeSecondsBase + elapsedSinceFetch;
+  }
+
   // Update uptime display every second
   function updateUptimeDisplay() {
-    if (!botStartTime) return;
-
     const uptimeElement = document.getElementById('uptime');
     if (uptimeElement) {
-      uptimeElement.textContent = formatUptime(botStartTime);
+      const currentUptime = getCurrentUptimeSeconds();
+      uptimeElement.textContent = formatUptimeFromSeconds(currentUptime);
     }
   }
 
@@ -256,12 +263,6 @@ const description = 'Real-time status monitoring for Discord bot operations';
     if (uptimeInterval) {
       clearInterval(uptimeInterval);
       uptimeInterval = null;
-    }
-
-    // Only start if we have a valid start time
-    if (!botStartTime || isNaN(botStartTime.getTime())) {
-      console.error('[Bot Status] Invalid bot start time, cannot start ticker');
-      return;
     }
 
     // Update immediately
@@ -288,19 +289,23 @@ const description = 'Real-time status monitoring for Discord bot operations';
       const data = await response.json();
       console.log('[Bot Status] Received data:', data);
 
-      // Store bot start time and start ticker
-      if (data.uptime && data.uptime.start_time) {
-        // Parse the start time - handle both ISO format and timestamp
-        const startTimeValue = data.uptime.start_time;
-        botStartTime = typeof startTimeValue === 'number'
-          ? new Date(startTimeValue * 1000) // Unix timestamp
-          : new Date(startTimeValue); // ISO string
+      // Store uptime seconds from API and current time
+      if (data.uptime) {
+        // Use seconds from API (more reliable than parsing timestamps)
+        if (typeof data.uptime.seconds === 'number') {
+          uptimeSecondsBase = data.uptime.seconds;
+          lastFetchTime = new Date();
 
-        console.log('[Bot Status] Bot start time:', botStartTime.toISOString());
-        console.log('[Bot Status] Current time:', new Date().toISOString());
+          // Calculate start time for display
+          botStartTime = new Date(lastFetchTime.getTime() - (uptimeSecondsBase * 1000));
+          document.getElementById('start-time')!.textContent = botStartTime.toLocaleString();
 
-        document.getElementById('start-time')!.textContent = botStartTime.toLocaleString();
-        startUptimeTicker();
+          console.log('[Bot Status] Uptime seconds:', uptimeSecondsBase);
+          console.log('[Bot Status] Calculated start time:', botStartTime.toLocaleString());
+
+          // Start or restart ticker
+          startUptimeTicker();
+        }
       }
 
       // Update system metrics
