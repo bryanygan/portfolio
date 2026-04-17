@@ -14,11 +14,18 @@ import BotSimulatorComponent from '../components/BotSimulator/BotSimulator.jsx';
           Discord Bot Simulator
         </h1>
         <p class="text-base sm:text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto px-4">
-          Experience my Discord bots in action! Test commands, see real responses, and explore the functionality 
+          Experience my Discord bots in action! Test commands, see real responses, and explore the functionality
           without needing to join a Discord server.
         </p>
+        <p
+          role="alert"
+          class="mt-4 max-w-3xl mx-auto text-sm sm:text-base font-medium text-amber-900 dark:text-amber-200 bg-amber-100 dark:bg-amber-900/30 border border-amber-300 dark:border-amber-700 rounded-lg px-4 py-3"
+        >
+          ⚠️ This is a demonstration. Do <strong>not</strong> enter real credit card numbers,
+          CVVs, or personal email addresses — any input is echoed back in the interface.
+        </p>
       </div>
-      
+
       <BotSimulatorComponent client:load />
       
       <div class="mt-6 sm:mt-8 md:mt-12 text-center">

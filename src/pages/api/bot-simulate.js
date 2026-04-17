@@ -154,23 +154,88 @@ function validateOperationLimit(operation, count) {
   return { valid: true };
 }
 
-// Simple mock authorization
+// Simple mock authorization — requires an explicit, matching user id.
 function isAuthorized(userId) {
-  // In simulation, we'll allow a specific user ID or if no auth is provided (for testing)
-  return !userId || userId === CONFIG.AUTHORIZED_USER_ID;
+  return typeof userId === 'string' && userId === CONFIG.AUTHORIZED_USER_ID;
+}
+
+// Maximum accepted JSON body size (bytes) and string lengths, to bound work done
+// on untrusted input before validation.
+const MAX_BODY_BYTES = 256 * 1024; // 256 KB
+const MAX_COMMAND_LENGTH = 2048;
+const MAX_FILE_CONTENT_LENGTH = 128 * 1024; // 128 KB
+
+function jsonResponse(status, body, extraHeaders = {}) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { 'Content-Type': 'application/json', ...extraHeaders }
+  });
+}
+
+function isPlainObject(value) {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
 }
 
 // This makes this specific route server-rendered
 export const prerender = false;
 
 export async function POST({ request, clientAddress }) {
+  // Rate-limit identity is always the edge client address. `userId` is
+  // attacker-controlled and must never influence throttling.
+  const identifier = clientAddress || 'unknown';
+
   try {
-    const { command, params = {}, pools, userId } = await request.json();
+    // Reject oversized bodies before parsing to avoid wasting CPU/memory on
+    // malicious inputs (Cloudflare Workers have tight CPU budgets).
+    const contentLength = Number(request.headers.get('content-length'));
+    if (Number.isFinite(contentLength) && contentLength > MAX_BODY_BYTES) {
+      return jsonResponse(413, { response: '❌ Request body too large' });
+    }
 
-    // Create identifier for rate limiting (prefer userId, fallback to IP)
-    const identifier = userId || clientAddress || 'unknown';
+    let payload;
+    try {
+      payload = await request.json();
+    } catch {
+      return jsonResponse(400, { response: '❌ Invalid JSON body' });
+    }
 
-    // Apply general rate limiting
+    if (!isPlainObject(payload)) {
+      return jsonResponse(400, { response: '❌ Invalid request payload' });
+    }
+
+    const { command, params: rawParams, pools: rawPools, userId: rawUserId } = payload;
+
+    if (typeof command !== 'string' || command.length === 0 || command.length > MAX_COMMAND_LENGTH) {
+      return jsonResponse(400, { response: '❌ Invalid or missing command' });
+    }
+
+    const params = rawParams === undefined ? {} : rawParams;
+    if (!isPlainObject(params)) {
+      return jsonResponse(400, { response: '❌ Invalid params' });
+    }
+
+    if (params.file !== undefined) {
+      if (!isPlainObject(params.file)) {
+        return jsonResponse(400, { response: '❌ Invalid file payload' });
+      }
+      if (params.file.content !== undefined) {
+        if (typeof params.file.content !== 'string') {
+          return jsonResponse(400, { response: '❌ Invalid file content' });
+        }
+        if (params.file.content.length > MAX_FILE_CONTENT_LENGTH) {
+          return jsonResponse(413, { response: '❌ File content too large' });
+        }
+      }
+    }
+
+    const pools = rawPools === undefined || isPlainObject(rawPools) ? rawPools : undefined;
+    // Only accept userId when it's a short string of safe characters; otherwise
+    // drop it (downstream auth checks require an exact match).
+    const userId = typeof rawUserId === 'string' && rawUserId.length <= 64 && /^[A-Za-z0-9_-]*$/.test(rawUserId)
+      ? rawUserId
+      : undefined;
+
+    // Apply general rate limiting keyed on client address.
     const rateLimit = isRateLimited(identifier);
     if (rateLimit.limited) {
       return new Response(JSON.stringify({
@@ -193,7 +258,11 @@ export async function POST({ request, clientAddress }) {
     }
 
     // Parse command
-    const commandParts = command.trim().split(' ');
+    const trimmed = command.trim();
+    if (trimmed.length === 0) {
+      return jsonResponse(400, { response: '❌ Empty command' });
+    }
+    const commandParts = trimmed.split(/\s+/);
     const commandName = commandParts[0].toLowerCase();
 
     // Check if this is a bulk operation
@@ -325,7 +394,8 @@ export async function POST({ request, clientAddress }) {
     });
 
   } catch (error) {
-    console.error('Bot simulation error:', error);
+    // Avoid echoing raw error details (stack traces, inputs) to logs/clients.
+    console.error('Bot simulation error:', error instanceof Error ? error.message : 'unknown');
     return new Response(JSON.stringify({
       response: '❌ Internal server error'
     }), {

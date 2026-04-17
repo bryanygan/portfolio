@@ -5,6 +5,7 @@ interface Props {
   href?: string;
   class?: string;
   target?: '_blank' | '_self';
+  rel?: string;
   id?: string;
 }
 
@@ -14,9 +15,12 @@ const {
   href,
   class: className = '',
   target = '_self',
+  rel,
   id,
   ...rest
 } = Astro.props;
+
+const computedRel = rel ?? (target === '_blank' ? 'noopener noreferrer' : undefined);
 
 const variants = {
   primary: 'bg-primary hover:bg-primary/90 text-white',
@@ -36,7 +40,7 @@ const classes = `${baseClasses} ${variants[variant]} ${sizes[size]} ${className}
 
 {
   href ? (
-    <a href={href} target={target} class={classes} id={id} {...rest}>
+    <a href={href} target={target} rel={computedRel} class={classes} id={id} {...rest}>
       <slot />
     </a>
   ) : (

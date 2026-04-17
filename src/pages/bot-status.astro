@@ -93,162 +93,24 @@ const description = 'Real-time status monitoring for Discord bot operations';
         </div>
       </div>
 
-      <!-- Control Panel -->
-      <div id="control-panel" class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700 hidden">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Control Panel</h3>
-
-        <div class="space-y-4">
-          <!-- API Configuration -->
-          <div>
-            <label for="api-url" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Bot API URL
-            </label>
-            <input
-              type="text"
-              id="api-url"
-              placeholder="http://localhost:5000 or your deployed URL"
-              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary dark:focus:ring-sky-500"
-            />
-          </div>
-
-          <!-- API Key (for restart) -->
-          <div>
-            <label for="api-key" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              API Key (required for restart)
-            </label>
-            <input
-              type="password"
-              id="api-key"
-              placeholder="Enter your STATUS_API_KEY"
-              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary dark:focus:ring-sky-500"
-            />
-          </div>
-
-          <!-- Restart Button -->
-          <div class="flex gap-4">
-            <button
-              id="restart-btn"
-              class="px-6 py-3 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              Restart Bot
-            </button>
-            <button
-              id="save-config-btn"
-              class="px-6 py-3 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors font-semibold"
-            >
-              Save Configuration
-            </button>
-          </div>
-
-          <!-- Restart Status -->
-          <div id="restart-status" class="hidden">
-            <div class="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
-              <div class="flex items-center gap-3">
-                <div class="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
-                <div>
-                  <p class="font-semibold text-blue-900 dark:text-blue-100" id="restart-status-title">Restarting...</p>
-                  <p class="text-sm text-blue-700 dark:text-blue-300" id="restart-status-message">Please wait...</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <!-- Error Display -->
-          <div id="error-display" class="hidden">
-            <div class="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
-              <p class="font-semibold text-red-900 dark:text-red-100">Error</p>
-              <p class="text-sm text-red-700 dark:text-red-300" id="error-message"></p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Private View Unlock -->
-      <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 border border-gray-200 dark:border-gray-700">
-        <h3 class="text-lg font-semibold text-gray-900 dark:text-white mb-4">Private View</h3>
-        <div class="flex gap-4 items-end">
-          <div class="flex-1">
-            <label for="pin-input" class="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-              Enter PIN to unlock full access
-            </label>
-            <input
-              type="password"
-              id="pin-input"
-              placeholder="Enter PIN code"
-              class="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-primary dark:focus:ring-sky-500"
-            />
-          </div>
-          <button
-            id="unlock-btn"
-            class="px-6 py-2 bg-primary dark:bg-sky-600 text-white rounded-lg hover:bg-blue-700 dark:hover:bg-sky-700 transition-colors font-semibold"
-          >
-            Unlock
-          </button>
-        </div>
-        <p class="text-xs text-gray-500 dark:text-gray-400 mt-2">
-          Private view reveals full usernames, channels, emails, and enables the control panel.
-        </p>
-      </div>
-
     </div>
   </Section>
 </Layout>
 
 <script>
-  // Configuration - Default to Railway production URL
-  const DEFAULT_API_URL = 'https://zreatsbot-production.up.railway.app';
-  const PRIVATE_PIN = '44275';
-  let API_URL = '';
-  let API_KEY = '';
+  // The bot status API is locked to a single trusted origin. Do NOT accept a
+  // user-supplied API URL here: earlier revisions let visitors paste arbitrary
+  // URLs and stored an operator API key in localStorage, which could be
+  // exfiltrated to a malicious host.
+  const API_URL = 'https://zreatsbot-production.up.railway.app';
+
   let eventSource: EventSource | null = null;
-  let isPrivateView = false;
 
   // Uptime tracking
   let botStartTime: Date | null = null;
-  let uptimeSecondsBase: number = 0; // Uptime in seconds from API
-  let lastFetchTime: Date | null = null; // When we last fetched from API
+  let uptimeSecondsBase: number = 0;
+  let lastFetchTime: Date | null = null;
   let uptimeInterval: number | null = null;
-
-  // Load configuration from localStorage
-  function loadConfig() {
-    const savedUrl = localStorage.getItem('bot-api-url');
-    const savedKey = localStorage.getItem('bot-api-key');
-
-    if (savedUrl) {
-      API_URL = savedUrl;
-      (document.getElementById('api-url') as HTMLInputElement).value = savedUrl;
-    } else {
-      // Use default Railway URL if not configured
-      API_URL = DEFAULT_API_URL;
-      (document.getElementById('api-url') as HTMLInputElement).value = DEFAULT_API_URL;
-    }
-
-    if (savedKey) {
-      API_KEY = savedKey;
-      (document.getElementById('api-key') as HTMLInputElement).value = savedKey;
-    }
-  }
-
-  // Save configuration to localStorage
-  function saveConfig() {
-    const urlInput = document.getElementById('api-url') as HTMLInputElement;
-    const keyInput = document.getElementById('api-key') as HTMLInputElement;
-
-    API_URL = urlInput.value.trim();
-    API_KEY = keyInput.value.trim();
-
-    localStorage.setItem('bot-api-url', API_URL);
-    localStorage.setItem('bot-api-key', API_KEY);
-
-    showSuccess('Configuration saved!');
-
-    // Reconnect with new URL
-    if (eventSource) {
-      eventSource.close();
-    }
-    connectSSE();
-    fetchAllData();
-  }
 
   // Format uptime duration from seconds
   function formatUptimeFromSeconds(totalSeconds: number): string {
@@ -257,396 +119,259 @@ const description = 'Real-time status monitoring for Discord bot operations';
     const minutes = Math.floor((totalSeconds % (60 * 60)) / 60);
     const seconds = Math.floor(totalSeconds % 60);
 
-    if (days > 0) {
-      return `${days}d ${hours}h ${minutes}m ${seconds}s`;
-    } else if (hours > 0) {
-      return `${hours}h ${minutes}m ${seconds}s`;
-    } else if (minutes > 0) {
-      return `${minutes}m ${seconds}s`;
-    } else {
-      return `${seconds}s`;
-    }
+    if (days > 0) return `${days}d ${hours}h ${minutes}m ${seconds}s`;
+    if (hours > 0) return `${hours}h ${minutes}m ${seconds}s`;
+    if (minutes > 0) return `${minutes}m ${seconds}s`;
+    return `${seconds}s`;
   }
 
-  // Calculate current uptime (base from API + elapsed time since fetch)
   function getCurrentUptimeSeconds(): number {
     if (!lastFetchTime) return uptimeSecondsBase;
-
-    const now = new Date();
-    const elapsedSinceFetch = (now.getTime() - lastFetchTime.getTime()) / 1000;
-    return uptimeSecondsBase + elapsedSinceFetch;
+    const elapsed = (Date.now() - lastFetchTime.getTime()) / 1000;
+    return uptimeSecondsBase + elapsed;
   }
 
-  // Update uptime display every second
   function updateUptimeDisplay() {
-    const uptimeElement = document.getElementById('uptime');
-    if (uptimeElement) {
-      const currentUptime = getCurrentUptimeSeconds();
-      uptimeElement.textContent = formatUptimeFromSeconds(currentUptime);
-    }
+    const el = document.getElementById('uptime');
+    if (el) el.textContent = formatUptimeFromSeconds(getCurrentUptimeSeconds());
   }
 
-  // Start uptime ticker
   function startUptimeTicker() {
-    // Clear any existing ticker to prevent multiple intervals
     if (uptimeInterval) {
       clearInterval(uptimeInterval);
       uptimeInterval = null;
     }
-
-    // Update immediately
     updateUptimeDisplay();
-
-    // Then update every second
-    uptimeInterval = setInterval(updateUptimeDisplay, 1000);
-    console.log('[Bot Status] Uptime ticker started');
+    uptimeInterval = window.setInterval(updateUptimeDisplay, 1000);
   }
 
-  // Privacy masking functions
+  // Privacy masking — always masks, because this page is public.
   function maskEmail(email: string): string {
-    if (isPrivateView) return email;
-
+    if (typeof email !== 'string') return '';
     const [localPart, domain] = email.split('@');
-    if (!domain) return email; // Invalid email format
-
+    if (!domain) return '*****';
     const halfLength = Math.ceil(localPart.length / 2);
-    const masked = localPart.substring(0, halfLength) + '*****';
-    return `${masked}@${domain}`;
+    return `${localPart.substring(0, halfLength)}*****@${domain}`;
   }
 
   function maskText(text: string): string {
-    if (isPrivateView) return text;
-
+    if (typeof text !== 'string') return '';
     const halfLength = Math.ceil(text.length / 2);
     return text.substring(0, halfLength) + '*****';
   }
 
   function parseTimestamp(timestamp: string): Date {
-    // If timestamp doesn't end with 'Z', treat it as UTC
+    if (typeof timestamp !== 'string') return new Date(NaN);
     if (!timestamp.endsWith('Z') && !timestamp.includes('+')) {
       return new Date(timestamp + 'Z');
     }
     return new Date(timestamp);
   }
 
-  // Fetch status data
+  function asString(value: unknown, fallback = ''): string {
+    return typeof value === 'string' ? value : fallback;
+  }
+
+  function asNumber(value: unknown): string {
+    return typeof value === 'number' && Number.isFinite(value) ? String(value) : '--';
+  }
+
+  function setText(id: string, value: string) {
+    const el = document.getElementById(id);
+    if (el) el.textContent = value;
+  }
+
+  function clearChildren(el: HTMLElement) {
+    while (el.firstChild) el.removeChild(el.firstChild);
+  }
+
+  // ---------- Data fetchers ----------
+
   async function fetchStatus() {
-    if (!API_URL) return;
-
     try {
-      console.log(`[Bot Status] Fetching from: ${API_URL}/status`);
       const response = await fetch(`${API_URL}/status`);
-
-      if (!response.ok) {
-        console.error(`[Bot Status] HTTP Error: ${response.status} ${response.statusText}`);
-        throw new Error(`HTTP ${response.status}`);
-      }
-
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = await response.json();
-      console.log('[Bot Status] Received data:', data);
 
-      // Store uptime seconds from API and current time
-      if (data.uptime) {
-        // Use seconds from API (more reliable than parsing timestamps)
-        if (typeof data.uptime.seconds === 'number') {
-          uptimeSecondsBase = data.uptime.seconds;
-          lastFetchTime = new Date();
-
-          // Calculate start time for display
-          botStartTime = new Date(lastFetchTime.getTime() - (uptimeSecondsBase * 1000));
-          document.getElementById('start-time')!.textContent = botStartTime.toLocaleString();
-
-          console.log('[Bot Status] Uptime seconds:', uptimeSecondsBase);
-          console.log('[Bot Status] Calculated start time:', botStartTime.toLocaleString());
-
-          // Start or restart ticker
-          startUptimeTicker();
-        }
+      if (data && data.uptime && typeof data.uptime.seconds === 'number' && Number.isFinite(data.uptime.seconds)) {
+        uptimeSecondsBase = data.uptime.seconds;
+        lastFetchTime = new Date();
+        botStartTime = new Date(lastFetchTime.getTime() - uptimeSecondsBase * 1000);
+        setText('start-time', botStartTime.toLocaleString());
+        startUptimeTicker();
       }
 
-      // Update system metrics
-      document.getElementById('cpu-usage')!.textContent = `${data.system.cpu_percent}%`;
-      document.getElementById('memory-usage')!.textContent = `${data.system.memory_mb} MB`;
-      document.getElementById('threads')!.textContent = data.system.threads.toString();
+      if (data && data.system) {
+        setText('cpu-usage', `${asNumber(data.system.cpu_percent)}%`);
+        setText('memory-usage', `${asNumber(data.system.memory_mb)} MB`);
+        setText('threads', asNumber(data.system.threads));
+      }
 
-      // Update status indicator
-      const indicator = document.getElementById('status-indicator')!;
-      indicator.classList.remove('bg-gray-400', 'bg-green-500', 'bg-red-500');
-      indicator.classList.add('bg-green-500');
+      const indicator = document.getElementById('status-indicator');
+      if (indicator) {
+        indicator.classList.remove('bg-gray-400', 'bg-green-500', 'bg-red-500');
+        indicator.classList.add('bg-green-500');
+      }
 
-      // Update last command
-      if (data.last_command) {
+      if (data && data.last_command) {
         updateLastCommand(data.last_command);
       }
     } catch (error) {
-      console.error('[Bot Status] Error fetching status:', error);
-      document.getElementById('status-indicator')!.classList.add('bg-red-500');
-
-      // Check if it's a CORS error
-      if (error instanceof TypeError && error.message.includes('fetch')) {
-        console.error('[Bot Status] Possible CORS issue. Check Railway CORS_ORIGINS setting.');
-      }
+      console.error('[Bot Status] Error fetching status');
+      document.getElementById('status-indicator')?.classList.add('bg-red-500');
     }
   }
 
-  // Fetch pool counts
   async function fetchPools() {
-    if (!API_URL) return;
-
     try {
-      console.log(`[Bot Status] Fetching pools from: ${API_URL}/pools`);
       const response = await fetch(`${API_URL}/pools`);
       const data = await response.json();
-      console.log('[Bot Status] Pools data:', data);
-
-      if (data.success) {
-        document.getElementById('pool-cards')!.textContent = data.pools.cards.toString();
-        document.getElementById('pool-emails-main')!.textContent = data.pools.emails.main.toString();
-        document.getElementById('pool-emails-fusion')!.textContent = data.pools.emails.fusion.toString();
-        document.getElementById('pool-emails-wool')!.textContent = data.pools.emails.wool.toString();
+      if (data && data.success && data.pools) {
+        setText('pool-cards', asNumber(data.pools.cards));
+        if (data.pools.emails) {
+          setText('pool-emails-main', asNumber(data.pools.emails.main));
+          setText('pool-emails-fusion', asNumber(data.pools.emails.fusion));
+          setText('pool-emails-wool', asNumber(data.pools.emails.wool));
+        }
       }
-    } catch (error) {
-      console.error('Error fetching pools:', error);
+    } catch {
+      console.error('[Bot Status] Error fetching pools');
     }
   }
 
-  // Fetch logs
   async function fetchLogs() {
-    if (!API_URL) return;
+    const container = document.getElementById('logs-container');
+    if (!container) return;
 
     try {
       const response = await fetch(`${API_URL}/logs?limit=20`);
       const data = await response.json();
 
-      const container = document.getElementById('logs-container')!;
+      clearChildren(container);
 
-      if (data.success && data.logs.length > 0) {
-        container.innerHTML = data.logs.map((log: any) => {
-          const timestamp = parseTimestamp(log.timestamp);
-          return `
-            <div class="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-600">
-              <div class="flex justify-between items-start">
-                <span class="font-medium text-gray-900 dark:text-white">${log.command_type}</span>
-                <span class="text-xs text-gray-500 dark:text-gray-400">${timestamp.toLocaleString()}</span>
-              </div>
-              ${log.email_used ? `<p class="text-sm text-gray-600 dark:text-gray-400 mt-1">Email: ${maskEmail(log.email_used)} (${log.email_pool})</p>` : ''}
-            </div>
-          `;
-        }).join('');
+      if (data && data.success && Array.isArray(data.logs) && data.logs.length > 0) {
+        for (const log of data.logs) {
+          container.appendChild(renderLogEntry(log));
+        }
       } else {
-        container.innerHTML = '<p class="text-gray-600 dark:text-gray-400">No logs available</p>';
+        const p = document.createElement('p');
+        p.className = 'text-gray-600 dark:text-gray-400';
+        p.textContent = 'No logs available';
+        container.appendChild(p);
       }
-    } catch (error) {
-      console.error('Error fetching logs:', error);
+    } catch {
+      console.error('[Bot Status] Error fetching logs');
     }
   }
 
-  // Update last command display
-  function updateLastCommand(command: any) {
-    const container = document.getElementById('last-command-content')!;
-    const timestamp = parseTimestamp(command.timestamp);
-    container.innerHTML = `
-      <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
-        <div>
-          <p class="text-xs text-gray-500 dark:text-gray-400">Command</p>
-          <p class="font-semibold text-gray-900 dark:text-white">${command.type}</p>
-        </div>
-        <div>
-          <p class="text-xs text-gray-500 dark:text-gray-400">User</p>
-          <p class="font-semibold text-gray-900 dark:text-white">${maskText(command.user)}</p>
-        </div>
-        <div>
-          <p class="text-xs text-gray-500 dark:text-gray-400">Channel</p>
-          <p class="font-semibold text-gray-900 dark:text-white">${maskText(command.channel)}</p>
-        </div>
-        <div>
-          <p class="text-xs text-gray-500 dark:text-gray-400">Time</p>
-          <p class="font-semibold text-gray-900 dark:text-white">${timestamp.toLocaleString()}</p>
-        </div>
-      </div>
-    `;
+  function renderLogEntry(log: unknown): HTMLElement {
+    // Untrusted input: every field is placed via textContent, never innerHTML,
+    // so any HTML/script in API responses is rendered harmlessly as text.
+    const wrapper = document.createElement('div');
+    wrapper.className =
+      'bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 border border-gray-200 dark:border-gray-600';
+
+    const header = document.createElement('div');
+    header.className = 'flex justify-between items-start';
+
+    const title = document.createElement('span');
+    title.className = 'font-medium text-gray-900 dark:text-white';
+    title.textContent = asString((log as any)?.command_type, 'unknown');
+
+    const tsSpan = document.createElement('span');
+    tsSpan.className = 'text-xs text-gray-500 dark:text-gray-400';
+    const ts = parseTimestamp(asString((log as any)?.timestamp));
+    tsSpan.textContent = Number.isNaN(ts.getTime()) ? '--' : ts.toLocaleString();
+
+    header.appendChild(title);
+    header.appendChild(tsSpan);
+    wrapper.appendChild(header);
+
+    const emailUsed = (log as any)?.email_used;
+    if (typeof emailUsed === 'string' && emailUsed.length > 0) {
+      const detail = document.createElement('p');
+      detail.className = 'text-sm text-gray-600 dark:text-gray-400 mt-1';
+      const pool = asString((log as any)?.email_pool, '');
+      detail.textContent = pool
+        ? `Email: ${maskEmail(emailUsed)} (${pool})`
+        : `Email: ${maskEmail(emailUsed)}`;
+      wrapper.appendChild(detail);
+    }
+
+    return wrapper;
   }
 
-  // Fetch all data
+  function updateLastCommand(command: unknown) {
+    const container = document.getElementById('last-command-content');
+    if (!container) return;
+    clearChildren(container);
+
+    const grid = document.createElement('div');
+    grid.className = 'grid grid-cols-2 md:grid-cols-4 gap-4';
+
+    const fields: Array<{ label: string; value: string }> = [
+      { label: 'Command', value: asString((command as any)?.type, '--') },
+      { label: 'User', value: maskText(asString((command as any)?.user, '')) || '--' },
+      { label: 'Channel', value: maskText(asString((command as any)?.channel, '')) || '--' },
+      { label: 'Time', value: (() => {
+          const ts = parseTimestamp(asString((command as any)?.timestamp));
+          return Number.isNaN(ts.getTime()) ? '--' : ts.toLocaleString();
+        })() }
+    ];
+
+    for (const { label, value } of fields) {
+      const cell = document.createElement('div');
+
+      const labelEl = document.createElement('p');
+      labelEl.className = 'text-xs text-gray-500 dark:text-gray-400';
+      labelEl.textContent = label;
+
+      const valueEl = document.createElement('p');
+      valueEl.className = 'font-semibold text-gray-900 dark:text-white';
+      valueEl.textContent = value;
+
+      cell.appendChild(labelEl);
+      cell.appendChild(valueEl);
+      grid.appendChild(cell);
+    }
+
+    container.appendChild(grid);
+  }
+
   function fetchAllData() {
     fetchStatus();
     fetchPools();
     fetchLogs();
   }
 
-  // Connect to SSE stream
   function connectSSE() {
-    if (!API_URL) return;
-
     eventSource = new EventSource(`${API_URL}/stream`);
 
     eventSource.onmessage = (event) => {
-      const data = JSON.parse(event.data);
+      let data: any;
+      try {
+        data = JSON.parse(event.data);
+      } catch {
+        return;
+      }
+      if (!data || typeof data.type !== 'string') return;
 
-      if (data.type === 'heartbeat') {
-        document.getElementById('uptime')!.textContent = data.uptime;
-      } else if (data.type === 'restart_requested') {
-        showRestartStatus('Restart Requested', data.data.reason);
-      } else if (data.type === 'restart_progress') {
-        showRestartStatus('Restarting...', data.data.message);
-      } else if (data.type === 'restart_error') {
-        showError(data.data.message);
+      if (data.type === 'heartbeat' && typeof data.uptime === 'string') {
+        setText('uptime', data.uptime);
       }
     };
 
     eventSource.onerror = () => {
-      console.log('SSE connection lost, will retry...');
-      document.getElementById('status-indicator')!.classList.remove('bg-green-500');
-      document.getElementById('status-indicator')!.classList.add('bg-red-500');
+      document.getElementById('status-indicator')?.classList.remove('bg-green-500');
+      document.getElementById('status-indicator')?.classList.add('bg-red-500');
     };
   }
 
-  // Restart bot
-  async function restartBot() {
-    if (!API_URL || !API_KEY) {
-      showError('Please configure API URL and API Key first');
-      return;
-    }
-
-    if (!confirm('Are you sure you want to restart the bot?')) {
-      return;
-    }
-
-    try {
-      showRestartStatus('Requesting Restart', 'Sending restart command...');
-
-      const response = await fetch(`${API_URL}/restart`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'X-API-Key': API_KEY
-        },
-        body: JSON.stringify({ reason: 'Manual restart from status page' })
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        showRestartStatus('Restart Initiated', 'Bot is restarting...');
-
-        // Poll for status after restart
-        setTimeout(() => {
-          pollForReconnection();
-        }, 5000);
-      } else {
-        showError(data.error || 'Failed to restart bot');
-      }
-    } catch (error: any) {
-      showError(`Error: ${error.message}`);
-    }
-  }
-
-  // Poll for bot reconnection after restart
-  function pollForReconnection() {
-    let attempts = 0;
-    const maxAttempts = 30;
-
-    const interval = setInterval(async () => {
-      attempts++;
-
-      try {
-        const response = await fetch(`${API_URL}/health`);
-        if (response.ok) {
-          clearInterval(interval);
-          hideRestartStatus();
-          showSuccess('Bot restarted successfully!');
-          fetchAllData();
-        }
-      } catch (error) {
-        // Bot not ready yet
-      }
-
-      if (attempts >= maxAttempts) {
-        clearInterval(interval);
-        showError('Bot restart timed out. Please check manually.');
-      }
-    }, 2000);
-  }
-
-  // UI helpers
-  function showRestartStatus(title: string, message: string) {
-    const status = document.getElementById('restart-status')!;
-    status.classList.remove('hidden');
-    document.getElementById('restart-status-title')!.textContent = title;
-    document.getElementById('restart-status-message')!.textContent = message;
-    document.getElementById('error-display')!.classList.add('hidden');
-  }
-
-  function hideRestartStatus() {
-    document.getElementById('restart-status')!.classList.add('hidden');
-  }
-
-  function showError(message: string) {
-    const error = document.getElementById('error-display')!;
-    error.classList.remove('hidden');
-    document.getElementById('error-message')!.textContent = message;
-    hideRestartStatus();
-  }
-
-  function showSuccess(message: string) {
-    // You can implement a toast notification here
-    alert(message);
-  }
-
-  // Toggle private view
-  function togglePrivateView() {
-    const pinInput = document.getElementById('pin-input') as HTMLInputElement;
-    const enteredPin = pinInput.value.trim();
-
-    if (enteredPin === PRIVATE_PIN) {
-      isPrivateView = true;
-      updateControlPanelVisibility();
-      // Refresh all data to show unmasked values
-      fetchAllData();
-      showSuccess('Private view enabled');
-      pinInput.value = ''; // Clear pin
-    } else {
-      isPrivateView = false;
-      updateControlPanelVisibility();
-      // Refresh all data to show masked values
-      fetchAllData();
-      if (enteredPin !== '') {
-        showError('Invalid PIN');
-        pinInput.value = '';
-      }
-    }
-  }
-
-  // Update control panel visibility
-  function updateControlPanelVisibility() {
-    const controlPanel = document.getElementById('control-panel')!;
-    if (isPrivateView) {
-      controlPanel.classList.remove('hidden');
-    } else {
-      controlPanel.classList.add('hidden');
-    }
-  }
-
-  // Event listeners
-  document.getElementById('save-config-btn')?.addEventListener('click', saveConfig);
-  document.getElementById('restart-btn')?.addEventListener('click', restartBot);
   document.getElementById('refresh-logs')?.addEventListener('click', fetchLogs);
-  document.getElementById('unlock-btn')?.addEventListener('click', togglePrivateView);
-  document.getElementById('pin-input')?.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-      togglePrivateView();
-    }
-  });
 
-  // Initialize on page load
-  loadConfig();
-  if (API_URL) {
-    connectSSE();
-    fetchAllData();
-
-    // Refresh data every 10 seconds
-    setInterval(fetchAllData, 10000);
-  }
+  connectSSE();
+  fetchAllData();
+  setInterval(fetchAllData, 10000);
 </script>
 
 <style>

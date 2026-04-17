@@ -7,18 +7,20 @@ const BotSimulator = () => {
     {
       id: 1,
       type: 'bot',
-      content: 'Welcome to the ZR Eats Bot Simulator! 🤖\nTry commands like `/fusion_assist`, `/wool_order`, or `/payments`',
+      content: 'Welcome to the ZR Eats Bot Simulator! 🤖\n⚠️ This is a demonstration only — do NOT enter real card numbers, CVVs, or personal emails.\nTry commands like `/fusion_assist`, `/wool_order`, or `/payments`',
       timestamp: new Date(),
     }
   ]);
   const [isTyping, setIsTyping] = useState(false);
   const [showPoolStatus, setShowPoolStatus] = useState(false);
+  // Obviously-fake placeholder values. Do not seed the UI with strings that
+  // look like real PANs/CVVs or personal emails.
   const [pools, setPools] = useState({
-    cards: ['3856273926573829,123', '3948374615728453,456'],
+    cards: ['TEST-CARD-0001,000', 'TEST-CARD-0002,000'],
     emails: {
-      main: ['user1@example.com', 'user2@example.com'],
-      pump_20off25: ['pump1@20off.com', 'pump2@20off.com'],
-      pump_25off: ['pump1@25off.com']
+      main: ['demo-main-1@example.test', 'demo-main-2@example.test'],
+      pump_20off25: ['demo-pump20-1@example.test', 'demo-pump20-2@example.test'],
+      pump_25off: ['demo-pump25-1@example.test']
     }
   });
 
