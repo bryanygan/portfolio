@@ -45,8 +45,9 @@ describe('Account Classes', () => {
       expect(checking.getBalance()).toBe(0);
     });
 
-    it('throws error on negative withdrawal', () => {
-      expect(() => checking.withdraw(-50)).toThrow('Negative amount not allowed');
+    it('throws error on non-positive withdrawal', () => {
+      expect(() => checking.withdraw(-50)).toThrow('Amount must be positive');
+      expect(() => checking.withdraw(0)).toThrow('Amount must be positive');
     });
 
     it('accrues APR correctly', () => {

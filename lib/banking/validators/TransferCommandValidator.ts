@@ -5,12 +5,10 @@ export class TransferCommandValidator {
   validate(transferCommand: TransferCommand, bank: Bank): boolean {
     const { fromId, toId, amount } = transferCommand;
 
-    // Cannot transfer to same account
     if (fromId === toId) {
       return false;
     }
 
-    // Check if both accounts exist
     const fromAccount = bank.getAccount(fromId);
     const toAccount = bank.getAccount(toId);
 
@@ -18,28 +16,30 @@ export class TransferCommandValidator {
       return false;
     }
 
-    // CD accounts cannot transfer
     if (fromAccount.getType() === AccountType.Cd || toAccount.getType() === AccountType.Cd) {
       return false;
     }
 
-    // Amount must be positive
-    if (amount <= 0) {
+    if (!Number.isFinite(amount) || amount <= 0) {
       return false;
     }
 
-    // Savings can only transfer out up to $1000
     if (fromAccount.getType() === AccountType.Savings && amount > 1000) {
       return false;
     }
 
-    // Checking can only receive up to $400 in transfers
     if (toAccount.getType() === AccountType.Checking && amount > 400) {
       return false;
     }
 
-    // Savings can only receive up to $2500 in transfers
     if (toAccount.getType() === AccountType.Savings && amount > 2500) {
+      return false;
+    }
+
+    // Reject if the source can't cover the transfer. Without this the processor
+    // silently moves only the available balance and logs the requested amount,
+    // so the transaction log is inconsistent with reality.
+    if (amount > fromAccount.getBalance()) {
       return false;
     }
 

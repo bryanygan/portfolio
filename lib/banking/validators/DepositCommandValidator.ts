@@ -1,6 +1,7 @@
 import { CommandParser } from '../utils/CommandParser';
 import { Bank } from '../core/Bank';
 import { AccountType } from '../types';
+import { parseMoney } from '../utils/NumericParsing';
 
 export class DepositCommandValidator {
   validate(command: string, bank: Bank): boolean {
@@ -24,9 +25,9 @@ export class DepositCommandValidator {
       return false;
     }
 
-    // Parse and validate amount
-    const amount = parseFloat(amountStr);
-    if (isNaN(amount) || amount < 0) {
+    // Parse and validate amount — strictly positive, finite, up to 2 dp.
+    const amount = parseMoney(amountStr);
+    if (amount === null || amount <= 0) {
       return false;
     }
 

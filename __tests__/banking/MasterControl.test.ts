@@ -77,7 +77,7 @@ describe('MasterControl Integration Tests', () => {
       expect(output).toContain('withdraw 12345678 300');
     });
 
-    it('handles withdraw exceeding balance', () => {
+    it('rejects withdraw exceeding balance without modifying state', () => {
       const commands = [
         'create checking 12345678 1.0',
         'deposit 12345678 100',
@@ -85,8 +85,10 @@ describe('MasterControl Integration Tests', () => {
       ];
       const output = masterControl.start(commands);
 
-      // Should withdraw all available (100), leaving 0
-      expect(output[0]).toMatch(/Checking 12345678 0.00 1.00/);
+      // Validation rejects the over-draw — balance is untouched and the
+      // command shows up in the invalid list verbatim.
+      expect(output[0]).toMatch(/Checking 12345678 100.00 1.00/);
+      expect(output).toContain('withdraw 12345678 200');
     });
   });
 

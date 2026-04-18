@@ -8,16 +8,12 @@ export class PassCommandValidator {
       return false;
     }
 
-    try {
-      // Check if it's a valid integer (no decimals)
-      if (!/^\d+$/.test(parts[1])) {
-        return false;
-      }
-
-      const months = parseInt(parts[1], 10);
-      return months >= 1 && months <= 60 && !isNaN(months);
-    } catch {
+    // Must be a plain non-negative integer (no decimals, sign, or exponent).
+    if (!/^\d+$/.test(parts[1])) {
       return false;
     }
+
+    const months = parseInt(parts[1], 10);
+    return months >= 1 && months <= 60;
   }
 }

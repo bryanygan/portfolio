@@ -2,6 +2,7 @@ import { CommandParser } from '../utils/CommandParser';
 import { Bank } from '../core/Bank';
 import { AccountTypeValidation } from './AccountTypeValidation';
 import { CdAccountValidation } from './CdAccountValidation';
+import { parseApr, parseMoney, hasAtMostTwoDecimals } from '../utils/NumericParsing';
 
 export class CreateCommandValidator {
   validate(command: string, bank: Bank): boolean {
@@ -15,47 +16,41 @@ export class CreateCommandValidator {
     const accountId = parts[2];
     const aprStr = parts[3];
 
-    // Validate account type
     if (!AccountTypeValidation.isValidAccountType(accountType)) {
       return false;
     }
 
-    // Validate account ID (must be 8 digits)
     if (!/^\d{8}$/.test(accountId)) {
       return false;
     }
 
-    // Check if account already exists in the bank
     if (bank.getAccount(accountId)) {
       return false;
     }
 
-    // Parse and validate APR
-    const apr = parseFloat(aprStr);
-    if (isNaN(apr) || apr < 0 || apr > 10) {
+    const apr = parseApr(aprStr);
+    if (apr === null || apr < 0 || apr > 10) {
       return false;
     }
 
-    // Validate APR has at most 2 decimal places
-    if (Math.floor(apr * 100) !== apr * 100) {
+    // Decimal-places rule is enforced against the string form so legitimate
+    // values like "2.3" aren't rejected due to float representation.
+    if (!hasAtMostTwoDecimals(aprStr)) {
       return false;
     }
 
-    // For checking and savings, should be exactly 4 parts
     if ((accountType === 'checking' || accountType === 'savings') && parts.length !== 4) {
       return false;
     }
 
-    // For CD, need exactly 5 parts and validate balance
     if (accountType === 'cd') {
       if (parts.length !== 5) {
         return false;
       }
 
       const balanceStr = parts[4];
-      const balance = parseFloat(balanceStr);
-
-      if (isNaN(balance)) {
+      const balance = parseMoney(balanceStr);
+      if (balance === null) {
         return false;
       }
 
@@ -63,7 +58,7 @@ export class CreateCommandValidator {
         return false;
       }
 
-      if (!CdAccountValidation.validateApr(apr)) {
+      if (!CdAccountValidation.validateApr(apr, aprStr)) {
         return false;
       }
     }

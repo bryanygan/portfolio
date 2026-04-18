@@ -5,9 +5,8 @@ export class CertificateOfDeposit extends Account {
   private monthsSinceCreation: number = 0;
 
   constructor(accountID: string, APR: number, initialBalance: number) {
-    super(accountID, APR);
-    this.type = AccountType.Cd;
-    this.balance = initialBalance;
+    super(accountID, APR, AccountType.Cd);
+    this.setBalance(initialBalance);
   }
 
   incrementMonths(): void {
@@ -18,17 +17,21 @@ export class CertificateOfDeposit extends Account {
     return this.monthsSinceCreation;
   }
 
+  setMonthsSinceCreation(months: number): void {
+    this.monthsSinceCreation = months;
+  }
+
   canWithdraw(): boolean {
     return this.monthsSinceCreation >= 12;
   }
 
-  // Override to apply APR 4 times per month for CD accounts
+  // CD accounts compound the monthly rate four times (quarterly within the
+  // month). Snap to whole cents after each step to avoid float drift.
   accrueMonthlyApr(): void {
     if (this.balance > 0) {
       const monthlyRate = (this.APR / 100) / 12;
-      // Apply APR 4 times for CD accounts (compounded quarterly within the month)
       for (let i = 0; i < 4; i++) {
-        this.balance = this.balance + (this.balance * (monthlyRate / 4));
+        this.setBalance(this.balance + this.balance * (monthlyRate / 4));
       }
     }
   }

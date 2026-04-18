@@ -1,4 +1,5 @@
 import { AccountType } from '../types';
+import { roundCents } from '../utils/NumericParsing';
 
 export abstract class Account {
   protected accountID: string;
@@ -6,11 +7,11 @@ export abstract class Account {
   protected APR: number;
   protected type: AccountType;
 
-  protected constructor(accountID: string, APR: number) {
+  protected constructor(accountID: string, APR: number, type: AccountType) {
     this.accountID = accountID;
     this.balance = 0;
     this.APR = APR;
-    this.type = AccountType.Checking; // Will be overridden by subclasses
+    this.type = type;
   }
 
   getAccountID(): string {
@@ -22,7 +23,9 @@ export abstract class Account {
   }
 
   setBalance(newBalance: number): void {
-    this.balance = Math.max(0, newBalance);
+    // Clamp at zero (fees can't push a balance negative) and always snap to
+    // whole cents to avoid accumulating IEEE-754 drift.
+    this.balance = Math.max(0, roundCents(newBalance));
   }
 
   getAPR(): number {
@@ -35,7 +38,7 @@ export abstract class Account {
 
   deposit(amount: number): boolean {
     if (amount > 0) {
-      this.balance += amount;
+      this.setBalance(this.balance + amount);
       return true;
     }
     return false;
@@ -43,12 +46,15 @@ export abstract class Account {
 
   withdraw(amount: number): number {
     if (amount <= 0) {
-      throw new Error('Negative amount not allowed');
+      throw new Error('Amount must be positive');
     }
 
+    // Partial fulfillment is intentional: fees can legitimately drain below
+    // the requested amount. Command handlers validate sufficient funds up
+    // front so they never hit this path.
     const withdrawn = Math.min(amount, this.balance);
     this.setBalance(this.balance - withdrawn);
-    return withdrawn;
+    return roundCents(withdrawn);
   }
 
   isZeroBalance(): boolean {
@@ -64,8 +70,7 @@ export abstract class Account {
   accrueMonthlyApr(): void {
     if (this.balance > 0) {
       const monthlyRate = (this.APR / 100) / 12;
-      const newBalance = this.balance + (this.balance * monthlyRate);
-      this.setBalance(newBalance);
+      this.setBalance(this.balance + this.balance * monthlyRate);
     }
   }
 

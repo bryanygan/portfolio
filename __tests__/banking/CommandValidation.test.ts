@@ -45,6 +45,18 @@ describe('CommandValidation', () => {
       expect(validator.validateCommand('create checking 12345678 1.234')).toBe(false);
     });
 
+    it('accepts APR values that trip naive float checks', () => {
+      // 2.3 * 100 is 229.999… in IEEE-754, so a naive Math.floor check used
+      // to reject this legitimate value.
+      expect(validator.validateCommand('create checking 12345678 2.3')).toBe(true);
+    });
+
+    it('rejects non-canonical numeric strings', () => {
+      expect(validator.validateCommand('create checking 12345678 1e1')).toBe(false);
+      expect(validator.validateCommand('create checking 12345678 +1')).toBe(false);
+      expect(validator.validateCommand('create checking 12345678 Infinity')).toBe(false);
+    });
+
     it('rejects create for duplicate account ID', () => {
       bank.addAccount(new Checking('12345678', 1.0));
       expect(validator.validateCommand('create checking 12345678 1.0')).toBe(false);
@@ -105,6 +117,16 @@ describe('CommandValidation', () => {
       expect(validator.validateCommand('deposit 1234567 500')).toBe(false);
     });
 
+    it('rejects deposit of zero', () => {
+      expect(validator.validateCommand('deposit 12345678 0')).toBe(false);
+    });
+
+    it('rejects deposit with non-canonical numeric forms', () => {
+      expect(validator.validateCommand('deposit 12345678 1e3')).toBe(false);
+      expect(validator.validateCommand('deposit 12345678 Infinity')).toBe(false);
+      expect(validator.validateCommand('deposit 12345678 100abc')).toBe(false);
+    });
+
     it('rejects deposit with non-numeric amount', () => {
       expect(validator.validateCommand('deposit 12345678 abc')).toBe(false);
     });
@@ -140,8 +162,27 @@ describe('CommandValidation', () => {
       expect(validator.validateCommand('withdraw 87654321 1001')).toBe(false);
     });
 
-    it('allows withdraw even if exceeds balance (validation passes, execution handles)', () => {
-      expect(validator.validateCommand('withdraw 12345678 2000')).toBe(true);
+    it('rejects withdraw exceeding current balance', () => {
+      expect(validator.validateCommand('withdraw 12345678 2000')).toBe(false);
+    });
+
+    it('rejects withdraw of zero', () => {
+      expect(validator.validateCommand('withdraw 12345678 0')).toBe(false);
+    });
+
+    it('rejects CD withdrawal before 12 months', () => {
+      bank.addAccount(new CertificateOfDeposit('22222222', 4.5, 5000));
+      expect(validator.validateCommand('withdraw 22222222 5000')).toBe(false);
+    });
+
+    it('rejects partial CD withdrawal even after 12 months', () => {
+      const cd = new CertificateOfDeposit('22222222', 4.5, 5000);
+      for (let i = 0; i < 12; i++) cd.incrementMonths();
+      bank.addAccount(cd);
+      // Less than full balance is rejected.
+      expect(validator.validateCommand('withdraw 22222222 1000')).toBe(false);
+      // Full-balance withdrawal (or greater) is allowed.
+      expect(validator.validateCommand('withdraw 22222222 5000')).toBe(true);
     });
   });
 
@@ -208,6 +249,17 @@ describe('CommandValidation', () => {
 
     it('rejects transfer with zero amount', () => {
       expect(validator.validateCommand('transfer 11111111 22222222 0')).toBe(false);
+    });
+
+    it('rejects transfer exceeding source balance', () => {
+      // checking1 has $1000; $600 exceeds checking-receive cap anyway, so
+      // use savings->checking at an amount the source can't cover.
+      // Here we first drain checking1 by creating a bigger transfer ask.
+      // Use amounts within per-account caps but above the source balance.
+      bank.addAccount(new Checking('55555555', 1.0));
+      // checking1 has $1000; try to transfer $2000 to savings (cap is $2500
+      // so cap check passes, but balance is insufficient).
+      expect(validator.validateCommand('transfer 11111111 33333333 2000')).toBe(false);
     });
   });
 

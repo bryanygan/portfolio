@@ -10,6 +10,9 @@ export interface BankingSystemState {
   output: string[];
   isProcessing: boolean;
   error: string | null;
+  // Monotonic tick bumped on every successful mutation. Consumers depend on
+  // this instead of output-as-a-proxy so derived state refreshes reliably.
+  version: number;
 }
 
 export function useBankingSystem() {
@@ -21,16 +24,17 @@ export function useBankingSystem() {
       commandHistory: [],
       output: [],
       isProcessing: false,
-      error: null
+      error: null,
+      version: 0
     };
   });
 
-  // Get all accounts as an array
   const accounts = useMemo(() => {
     return Array.from(state.bank.getAllAccounts().values());
-  }, [state.bank, state.output]);
+    // `version` changes on every mutation of the (mutable) bank; use it as
+    // the invalidation key instead of `state.output`.
+  }, [state.bank, state.version]);
 
-  // Execute a single command
   const executeCommand = useCallback((command: string) => {
     if (!command.trim()) return;
 
@@ -42,7 +46,8 @@ export function useBankingSystem() {
           commandHistory: [...prev.commandHistory, command],
           output: newOutput,
           isProcessing: false,
-          error: null
+          error: null,
+          version: prev.version + 1
         };
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred';
@@ -56,7 +61,6 @@ export function useBankingSystem() {
     });
   }, []);
 
-  // Execute multiple commands (for scenarios)
   const executeBatch = useCallback((commands: string[]) => {
     if (commands.length === 0) return;
 
@@ -68,7 +72,8 @@ export function useBankingSystem() {
           commandHistory: [...prev.commandHistory, ...commands],
           output: newOutput,
           isProcessing: false,
-          error: null
+          error: null,
+          version: prev.version + 1
         };
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : 'An unknown error occurred executing batch';
@@ -82,30 +87,27 @@ export function useBankingSystem() {
     });
   }, []);
 
-  // Reset the entire banking system
   const reset = useCallback(() => {
     const newBank = new Bank();
-    setState({
+    setState(prev => ({
       bank: newBank,
       masterControl: new MasterControl(newBank),
       commandHistory: [],
       output: [],
       isProcessing: false,
-      error: null
-    });
+      error: null,
+      version: prev.version + 1
+    }));
   }, []);
 
-  // Get account by ID
   const getAccount = useCallback((accountId: string): Account | undefined => {
     return state.bank.getAccount(accountId);
   }, [state.bank]);
 
-  // Get invalid commands from last execution
   const getInvalidCommands = useCallback((): string[] => {
     return state.masterControl.getInvalidCommands();
   }, [state.masterControl]);
 
-  // Parse output to separate account states and transactions
   const parsedOutput = useMemo(() => {
     const accountOutputs: Map<string, {
       state: string;
@@ -115,12 +117,10 @@ export function useBankingSystem() {
     const invalidCommands: string[] = [];
     let currentAccountId: string | null = null;
 
-    // Compile regex patterns once
     const accountStateRegex = /^(Checking|Savings|Cd)\s+\d{8}/;
     const transactionRegex = /^(create|deposit|withdraw|transfer|pass)/;
 
     state.output.forEach(line => {
-      // Check if it's an account state line (starts with account type)
       if (accountStateRegex.test(line)) {
         const parts = line.split(' ');
         currentAccountId = parts[1];
@@ -128,16 +128,12 @@ export function useBankingSystem() {
           state: line,
           transactions: []
         });
-      }
-      // Check if it's a transaction line (command)
-      else if (currentAccountId && transactionRegex.test(line)) {
+      } else if (currentAccountId && transactionRegex.test(line)) {
         const accountOutput = accountOutputs.get(currentAccountId);
         if (accountOutput) {
           accountOutput.transactions.push(line);
         }
-      }
-      // Otherwise it's an invalid command
-      else if (line.trim()) {
+      } else if (line.trim()) {
         invalidCommands.push(line);
       }
     });
@@ -149,16 +145,14 @@ export function useBankingSystem() {
   }, [state.output]);
 
   return {
-    // State
     bank: state.bank,
     commandHistory: state.commandHistory,
     output: state.output,
     isProcessing: state.isProcessing,
     error: state.error,
+    version: state.version,
     accounts,
     parsedOutput,
-
-    // Actions
     executeCommand,
     executeBatch,
     reset,

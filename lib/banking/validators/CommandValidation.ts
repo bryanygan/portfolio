@@ -5,6 +5,7 @@ import { DepositCommandValidator } from './DepositCommandValidator';
 import { WithdrawCommandValidator } from './WithdrawCommandValidator';
 import { TransferCommandValidator } from './TransferCommandValidator';
 import { PassCommandValidator } from './PassCommandValidator';
+import { parseMoney } from '../utils/NumericParsing';
 import type { TransferCommand } from '../types';
 
 export class CommandValidation {
@@ -63,24 +64,19 @@ export class CommandValidation {
 
     const fromId = parts[1];
     const toId = parts[2];
+    const amount = parseMoney(parts[3]);
 
-    try {
-      const amount = parseFloat(parts[3]);
-
-      if (isNaN(amount)) {
-        return false;
-      }
-
-      const transferCommand: TransferCommand = {
-        fromId,
-        toId,
-        amount,
-        raw: command
-      };
-
-      return this.transferValidator.validate(transferCommand, this.bank);
-    } catch {
+    if (amount === null) {
       return false;
     }
+
+    const transferCommand: TransferCommand = {
+      fromId,
+      toId,
+      amount,
+      raw: command
+    };
+
+    return this.transferValidator.validate(transferCommand, this.bank);
   }
 }

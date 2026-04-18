@@ -10,13 +10,14 @@ interface AccountCardProps {
 }
 
 const AccountCardComponent = ({ account, onClick, selected = false }: AccountCardProps) => {
-  // Memoize account data extraction to avoid recalculating on every render
-  const accountData = useMemo(() => ({
-    type: account.getType(),
-    balance: account.getBalance(),
-    apr: account.getAPR(),
-    id: account.getAccountID()
-  }), [account]);
+  // Read the primitive fields eagerly. `account` is a mutable instance so a
+  // `[account]` dep wouldn't catch balance/APR changes; key off the actual
+  // values instead.
+  const id = account.getAccountID();
+  const type = account.getType();
+  const balance = account.getBalance();
+  const apr = account.getAPR();
+  const accountData = useMemo(() => ({ type, balance, apr, id }), [type, balance, apr, id]);
 
   // Get styling based on account type
   const styles = useMemo(() => {

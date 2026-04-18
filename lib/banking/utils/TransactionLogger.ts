@@ -13,7 +13,9 @@ export class TransactionLogger {
   }
 
   getTransactions(accountID: string): string[] {
-    return this.transactionsByAccount.get(accountID) || [];
+    const transactions = this.transactionsByAccount.get(accountID);
+    // Defensive copy so callers can't mutate the logger's internal array.
+    return transactions ? [...transactions] : [];
   }
 
   removeTransactionsForAccount(accountID: string): void {

@@ -103,6 +103,8 @@ describe('Banking Simulator Integration Tests', () => {
     });
 
     it('should execute CD account scenario', () => {
+      // After 12 months a CD can be withdrawn, but only in full. A partial
+      // withdrawal ($1000 from the accrued balance) is rejected.
       const commands = [
         'create cd 33333333 3.0 5000',
         'pass 12',
@@ -111,18 +113,16 @@ describe('Banking Simulator Integration Tests', () => {
 
       const output = masterControl.start(commands);
 
-      // CD should exist and have balance > 5000 due to APR
       const cdLine = output.find(line => line.includes('Cd'));
       expect(cdLine).toBeTruthy();
 
-      // Should show withdrawal transaction
+      // Partial withdrawal is rejected: amount stays in the CD, command is
+      // flagged invalid.
       expect(output).toContain('withdraw 33333333 1000');
 
-      // Balance should be original + APR - withdrawal
       const balanceMatch = cdLine!.match(/Cd 33333333 ([\d.]+) 3\.00/);
       const balance = parseFloat(balanceMatch![1]);
-      expect(balance).toBeGreaterThan(4000); // ~5150 - 1000
-      expect(balance).toBeLessThan(5000);
+      expect(balance).toBeGreaterThan(5000); // original + 12 months APR
     });
 
     it('should handle invalid commands scenario', () => {

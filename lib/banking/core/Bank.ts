@@ -22,7 +22,9 @@ export class Bank {
   }
 
   getAllAccounts(): Map<string, Account> {
-    return this.accounts;
+    // Return a shallow copy of the Map so external callers can't mutate bank
+    // membership (the account instances themselves are intentionally shared).
+    return new Map(this.accounts);
   }
 
   depositByID(accountID: string, amount: number): void {
