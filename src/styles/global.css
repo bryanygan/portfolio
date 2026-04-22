@@ -194,8 +194,20 @@ body {
 button:focus-visible,
 input:focus-visible,
 [role="button"]:focus-visible {
-  outline: 2px solid #3b82f6;
+  outline: 2px solid #4169E1;
   outline-offset: 2px;
+}
+
+/* Respect users who've asked for less animation. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Smooth transitions for interactive elements only */

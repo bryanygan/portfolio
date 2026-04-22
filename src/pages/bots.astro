@@ -54,7 +54,7 @@ const botProjects: BotProject[] = [
         botProjects.map((project) => (
           <Card hover={true} class="overflow-hidden h-full flex flex-col">
             <div class="h-80 overflow-hidden">
-              <img src={project.image} alt={project.title} class="w-full h-full object-cover" loading="lazy" />
+              <img src={project.image} alt="" class="w-full h-full object-cover" loading="lazy" aria-hidden="true" />
             </div>
             <div class="p-6 flex-grow flex flex-col">
               <h3 class="text-xl font-bold mb-2">{project.title}</h3>

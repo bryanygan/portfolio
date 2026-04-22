@@ -28,19 +28,33 @@ const fullCanonicalUrl = `${siteUrl}${canonicalUrl}`;
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="description" content={description} />
-		<meta name="viewport" content="width=device-width" />
-		
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+
+		<!-- Theme — blocking inline script in <head> prevents a flash of light
+		     mode on first paint and honors the OS color-scheme preference when
+		     the user hasn't picked one explicitly. -->
+		<script is:inline>
+			(() => {
+				try {
+					const saved = localStorage.getItem('theme');
+					const dark = saved
+						? saved === 'dark'
+						: window.matchMedia('(prefers-color-scheme: dark)').matches;
+					document.documentElement.classList.toggle('dark', dark);
+				} catch {}
+			})();
+		</script>
+
 		<!-- SEO Tags -->
 		<link rel="canonical" href={fullCanonicalUrl} />
 		<meta name="robots" content="index, follow" />
-		<meta http-equiv="X-Robots-Tag" content="index, follow" />
-		
+
 		<!-- Hreflang Tags -->
 		<link rel="alternate" hreflang="en-US" href={fullCanonicalUrl} />
 		<link rel="alternate" hreflang="x-default" href={fullCanonicalUrl} />
-		
+
 		<!-- Resource Hints -->
-		<link rel="preconnect" href="https://github.com" />
+		<link rel="dns-prefetch" href="https://github.com" />
 		<link rel="dns-prefetch" href="https://discord.com" />
 		<link rel="dns-prefetch" href="https://linkedin.com" />
 
@@ -90,17 +104,10 @@ const fullCanonicalUrl = `${siteUrl}${canonicalUrl}`;
 		</main>
 		<Footer />
 		<script>
-			// Theme toggle functionality
+			// Wire up the header theme-toggle button. The initial class is
+			// applied by the inline script in <head>, so there's no FOUC to fix
+			// here.
 			const themeToggle = document.getElementById('theme-toggle');
-			const savedTheme = localStorage.getItem('theme') || 'light';
-			
-			// Apply saved theme on load
-			if (savedTheme === 'dark' || (!savedTheme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
-				document.documentElement.classList.add('dark');
-			} else {
-				document.documentElement.classList.remove('dark');
-			}
-			
 			themeToggle?.addEventListener('click', () => {
 				const isDark = document.documentElement.classList.toggle('dark');
 				localStorage.setItem('theme', isDark ? 'dark' : 'light');

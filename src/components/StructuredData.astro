@@ -23,28 +23,30 @@ const personSchema = {
   "@type": "Person",
   "name": "Bryan Gan",
   "url": baseUrl,
-  "image": `${baseUrl}/android-chrome-512x512.png`,
+  "image": imageUrl,
   "sameAs": [
     "https://www.linkedin.com/in/bryanygan/",
+    "https://github.com/bryanygan"
   ],
   "jobTitle": "Software Engineer",
-  "worksFor": {
-    "@type": "Organization",
-    "name": "Bryan Gan"
+  "alumniOf": {
+    "@type": "CollegeOrUniversity",
+    "name": "Drexel University"
   },
   "description": description
 };
 
-// Website Schema
+// Website Schema — the site name is fixed regardless of which page the
+// schema is rendered on, so crawlers don't see conflicting WebSite entities.
 const websiteSchema = {
   "@context": "https://schema.org",
   "@type": "WebSite",
   "url": baseUrl,
-  "name": title,
+  "name": "Bryan Gan — Portfolio",
   "description": description,
   "author": {
     "@type": "Person",
-    "name": "Bryan Gan",
+    "name": "Bryan Gan"
   }
 };
 

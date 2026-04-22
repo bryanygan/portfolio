@@ -50,14 +50,26 @@ const AccountCardComponent = ({ account, onClick, selected = false }: AccountCar
     }
   }, [accountData.type]);
 
+  // Render as a <button> when clickable so keyboard users get Enter/Space
+  // activation and focus styling for free; otherwise a plain <div> is fine.
+  const Tag = onClick ? 'button' : 'div';
+  const interactiveProps = onClick
+    ? {
+        type: 'button' as const,
+        onClick,
+        'aria-pressed': selected,
+        'aria-label': `${styles.name} account ${accountData.id}, balance $${accountData.balance.toFixed(2)}`
+      }
+    : {};
+
   return (
-    <div
-      onClick={onClick}
+    <Tag
+      {...interactiveProps}
       className={`
-        relative bg-gradient-to-br ${styles.gradient}
+        relative text-left w-full bg-gradient-to-br ${styles.gradient}
         rounded-xl p-6 text-white shadow-lg
         transform transition-all duration-200
-        ${onClick ? 'cursor-pointer hover:scale-105 hover:shadow-xl' : ''}
+        ${onClick ? 'cursor-pointer hover:scale-105 hover:shadow-xl focus:outline-none focus-visible:ring-4 focus-visible:ring-white/70' : ''}
         ${selected ? 'ring-4 ring-white ring-opacity-50 scale-105' : ''}
       `}
     >
@@ -98,7 +110,7 @@ const AccountCardComponent = ({ account, onClick, selected = false }: AccountCar
       {/* Decorative Elements */}
       <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full -mr-16 -mt-16" />
       <div className="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-5 rounded-full -ml-12 -mb-12" />
-    </div>
+    </Tag>
   );
 };
 

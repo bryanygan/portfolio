@@ -4,5 +4,5 @@ Allow: /
 # Disallow specific patterns if needed
 # Disallow: /admin/
 
-# Sitemap location
-Sitemap: https://bryangan.com/sitemap.xml 
+# Sitemap location (emitted by @astrojs/sitemap as sitemap-index.xml)
+Sitemap: https://bryangan.com/sitemap-index.xml
