@@ -1,199 +1,113 @@
-# Bryan Gan's Portfolio
+# Bryan Gan — Portfolio
 
----
+Personal portfolio and playground at [bryangan.com](https://bryangan.com).
 
-## Table of Contents
+Built with **Astro 5** (server-rendered), **React 19** for interactive
+islands, and **Tailwind CSS**. Deployed on **Cloudflare Workers** via
+`@astrojs/cloudflare`.
 
-1. [Project Overview](#project-overview)
-2. [Key Features](#key-features)
-3. [Tech Stack](#tech-stack)
-4. [Project Structure](#project-structure)
-5. [Component Breakdown](#component-breakdown)
-6. [Getting Started](#getting-started)
-7. [Available Scripts](#available-scripts)
-8. [Deployment](#deployment)
-9. [Customization & Theming](#customization--theming)
-10. [Contributing](#contributing)
-11. [License](#license)
+## Features
 
----
-
-## Project Overview
-
-This repository contains a personal portfolio website built with **Astro**. It showcases:
-
-* An engaging **Hero** section with a brief introduction
-* A detailed **About** section outlining skills and background
-* A concise **Experience** timeline highlighting professional roles
-* A dynamic **Projects** gallery of key work samples
-* A **Contact** section with a form and social links
-* Shared UI primitives (`Button`, `Card`, `Section`, `Header`, `Footer`) for consistency
-
-The site is fully responsive and optimized for performance and SEO out of the box.
-
-## Key Features
-
-* **Static Site Generation**: lightning-fast builds and delivery via Astro
-* **Component-driven**: reusable `.astro` components
-* **Responsive Design**: mobile-first, built with utility‑first CSS (e.g., Tailwind)
-* **SEO Ready**: semantic markup, meta tags, and sitemap support
-* **Accessibility**: ARIA attributes and keyboard navigation
+- **Landing page** — hero, about, experience, and projects sections.
+- **Bot Simulator** (`/bot-simulator`) — Discord-style UI that exercises a
+  mock `/api/bot-simulate` server route. Demonstrates command routing,
+  embed rendering, rate limiting, and input validation.
+- **Bot Status Monitor** (`/bot-status`) — read-only dashboard for a
+  Railway-hosted Discord bot's public `/status`, `/pools`, and `/logs`
+  endpoints (streams updates via SSE).
+- **Banking System Simulator** (`/banking-system`) — interactive
+  TypeScript reimplementation of a TDD Java exercise. Accepts
+  `create`/`deposit`/`withdraw`/`transfer`/`pass` commands, validates
+  CD locks, enforces balance/limit rules, and accrues APR monthly.
+  Ships with 150+ Vitest tests.
+- **Contact form** — Web3Forms submission with a honeypot; no
+  server-side storage of messages.
 
 ## Tech Stack
 
-* **Framework**: [Astro](https://astro.build)
-* **Styling**: Tailwind CSS (or your preferred utility‑first engine)
-* **Markdown Support**: MDX or plain `.md` for blog/content pages
-* **Assets**: Optimized images with Astro `<Image>` component
-* **Deployment**: Netlify, Vercel, or any static host
+- Astro 5 (`output: 'server'`), `@astrojs/cloudflare` adapter
+- React 19 islands for the two simulators
+- TypeScript (strict)
+- Tailwind CSS 3 + `@astrojs/tailwind`
+- Vitest 3 for unit and integration tests
+- `@astrojs/sitemap` for the sitemap
+- GitHub Actions CI (install → typecheck → test → build)
 
 ## Project Structure
 
 ```
-/├── public/               # Static assets (images, icons, fonts)
-   └── favicon.svg
+.
+├── __tests__/                 Vitest suites (banking core, hooks, integration)
+├── lib/
+│   └── banking/               Pure TypeScript banking domain
+│       ├── core/              Account / Bank / MasterControl / CD
+│       ├── processors/        Command processors (create, deposit, …)
+│       ├── validators/        Command validators + NumericParsing helper
+│       ├── utils/             CommandParser, TransactionLogger
+│       ├── config/            Example scenarios
+│       └── types.ts
+├── public/                    Static assets + CSP/caching _headers
 ├── src/
-│   ├── components/       # Reusable UI components
-│   │   ├── Hero.astro
-│   │   ├── About.astro
-│   │   ├── Experience.astro
-│   │   ├── Projects.astro
-│   │   ├── Contact.astro
-│   │   ├── Button.astro
-│   │   ├── Card.astro
-│   │   ├── Section.astro
+│   ├── assets/                SVGs, images
+│   ├── components/
+│   │   ├── banking/           Banking simulator React components
+│   │   ├── BotSimulator/      Bot simulator React components
+│   │   ├── sections/          Hero / About / Experience / Projects / Contact
+│   │   ├── ui/                Button / Card / Section primitives
 │   │   ├── Header.astro
-│   │   └── Footer.astro
-│   ├── layouts/          # Page layouts (e.g., default layout)
-│   └── pages/            # Route-driven pages
-│       └── index.astro   # Landing page assembling components
-├── astro.config.mjs      # Astro configuration file
-├── tailwind.config.cjs   # Tailwind configuration (if used)
-├── package.json          # Dependencies & scripts
-└── README.md             # This file
+│   │   ├── Footer.astro
+│   │   └── StructuredData.astro
+│   ├── hooks/
+│   │   └── useBankingSystem.ts
+│   ├── layouts/
+│   │   └── Layout.astro
+│   ├── pages/
+│   │   ├── index.astro
+│   │   ├── banking-system.astro
+│   │   ├── bots.astro
+│   │   ├── bot-simulator.astro
+│   │   ├── bot-status.astro
+│   │   └── api/
+│   │       └── bot-simulate.js
+│   └── styles/
+│       └── global.css
+├── astro.config.mjs
+├── tailwind.config.js
+├── tsconfig.json
+└── vitest.config.ts
 ```
-
-## Component Breakdown
-
-> **Hero.astro**
->
-> * Top-of-page introduction with name, role/title, and a call-to-action.
-
-> **About.astro**
->
-> * Detailed personal summary, skills list, and core strengths.
-
-> **Experience.astro**
->
-> * Chronological timeline of past roles, companies, and durations.
-
-> **Projects.astro**
->
-> * Grid of project cards showcasing titles, descriptions, and links.
-
-> **Contact.astro**
->
-> * Contact form and social media links (email, GitHub, LinkedIn).
-
-> **Button.astro**
->
-> * Standardized button component for links and form submissions.
-
-> **Card.astro**
->
-> * Reusable card layout for projects, blog posts, or feature highlights.
-
-> **Section.astro**
->
-> * Wrapper with consistent padding/margins and optional background.
-
-> **Header.astro** & **Footer.astro**
->
-> * Site navigation, logo, copyright, and footer links.
 
 ## Getting Started
 
-1. **Clone the repository**
+Requires Node ≥ 18.20 (`.nvmrc` pins 20).
 
-   ```bash
-   git clone https://github.com/your-username/portfolio.git
-   cd portfolio
-   ```
+```bash
+git clone https://github.com/bryanygan/portfolio.git
+cd portfolio
+npm install
+cp .env.example .env      # fill in PUBLIC_WEB3FORMS_ACCESS_KEY if testing Contact
+npm run dev               # http://localhost:4321
+```
 
-2. **Install dependencies**
+## Scripts
 
-   ```bash
-   npm install
-   # or
-   yarn install
-   ```
-
-3. **Create a `.env` file**
-
-   ```bash
-   cp .env.example .env
-   ```
-
-   Add your Web3Forms access key to `WEB3FORMS_ACCESS_KEY` in the new `.env` file.
-
-4. **Run development server**
-
-   ```bash
-   npm run dev
-   # or
-   yarn dev
-   ```
-
-   * Open [http://localhost:3000](http://localhost:3000) to view in your browser.
-
-## Available Scripts
-
-| Command           | Description                             |
-| ----------------- | --------------------------------------- |
-| `npm run dev`     | Start Astro in development mode         |
-| `npm run build`   | Build production assets into `dist/`    |
-| `npm run preview` | Preview the production build locally    |
-| `npm run lint`    | Lint your code (ESLint, Prettier, etc.) |
+| Command               | What it does                                           |
+| --------------------- | ------------------------------------------------------ |
+| `npm run dev`         | Start Astro dev server (default port 4321)             |
+| `npm run build`       | Build for production into `dist/`                      |
+| `npm run preview`     | Preview the production build locally                   |
+| `npm test`            | Run Vitest in watch mode                               |
+| `npm run test:run`    | Run Vitest once (used in CI)                           |
+| `npm run test:ui`     | Open the Vitest UI                                     |
+| `npm run typecheck`   | `astro check` — type-checks Astro, TS, and `.tsx`/`.jsx` |
 
 ## Deployment
 
-1. **Build**
-
-   ```bash
-   npm run build
-   ```
-
-2. **Deploy**
-
-   * Push the `dist/` folder to your static host of choice:
-
-     * **Netlify**: drag & drop, or connect GitHub repo
-     * **Vercel**: `vercel` CLI or GitHub integration
-     * **GitHub Pages**: use `gh-pages` branch
-
-## Customization & Theming
-
-* **Colors & Typography**: edit `tailwind.config.cjs` or global CSS
-* **Metadata**: update `<head>` tags in `src/layouts/default.astro`
-* **Content**: modify texts in each section component
-* **Images**: replace assets in `public/` and adjust references
-
-## Contributing
-
-Contributions are welcome! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/YourFeature`
-3. Commit your changes: \`git commit -m "Add YourFeature"
-4. Push to branch: `git push origin feature/YourFeature`
-5. Open a Pull Request
+Deployed to Cloudflare Workers via `@astrojs/cloudflare`. `public/_headers`
+configures caching, `Content-Security-Policy`, `Strict-Transport-Security`,
+and other defensive headers for every response. A sitemap is emitted at
+`/sitemap-index.xml`; `public/robots.txt` points at it.
 
 ## License
 
-This project is licensed under the **MIT License**.
-
----
-
-*Last updated: May 6, 2025*
-
-Template used: https://astro.build/themes/details/front-end-developer-theme/
+MIT.

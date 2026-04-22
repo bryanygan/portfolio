@@ -1,7 +1,8 @@
 {
-  "name": "renato-khael",
+  "name": "bryangan-portfolio",
   "type": "module",
   "version": "0.0.1",
+  "private": true,
   "engines": {
     "node": ">=18.20.8"
   },
@@ -11,25 +12,29 @@
     "preview": "astro preview",
     "astro": "astro",
     "test": "vitest",
-    "test:ui": "vitest --ui"
+    "test:run": "vitest --run",
+    "test:ui": "vitest --ui",
+    "typecheck": "astro check"
   },
   "dependencies": {
     "@astrojs/cloudflare": "^12.5.4",
     "@astrojs/react": "^4.4.0",
     "@astrojs/sitemap": "^3.6.0",
     "@astrojs/tailwind": "^6.0.2",
-    "@types/react": "^19.2.2",
-    "@types/react-dom": "^19.2.1",
     "astro": "^5.7.4",
-    "autoprefixer": "^10.4.21",
-    "postcss": "^8.5.3",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-icons": "^5.5.0",
     "tailwindcss": "^3.4.17"
   },
   "devDependencies": {
+    "@astrojs/check": "^0.9.8",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.1",
     "@vitest/ui": "^3.2.4",
+    "autoprefixer": "^10.4.21",
+    "postcss": "^8.5.3",
+    "typescript": "^5.9.3",
     "vitest": "^3.2.4"
   }
 }

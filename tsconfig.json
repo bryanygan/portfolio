@@ -3,8 +3,11 @@
   "compilerOptions": {
     "jsx": "react-jsx",
     "allowJs": true,
-    "strict": false
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["./*"]
+    }
   },
-  "include": ["src/**/*"],
-  "exclude": ["node_modules", "dist"]
+  "include": ["src/**/*", "lib/**/*", "__tests__/**/*"],
+  "exclude": ["node_modules", "dist", ".astro"]
 }

@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from 'react';
+import { useState } from 'react';
 import ChatInterface from './ChatInterface';
 import CommandInput from './CommandInput';
 

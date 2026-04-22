@@ -34,7 +34,7 @@ export class TransferCommandProcessor {
     toAccount.deposit(actualWithdrawn);
 
     // Log the transaction for both accounts
-    this.transactionLogger.logTransactionRaw(fromId, command);
-    this.transactionLogger.logTransactionRaw(toId, command);
+    this.transactionLogger.logTransaction(fromId, command);
+    this.transactionLogger.logTransaction(toId, command);
   }
 }

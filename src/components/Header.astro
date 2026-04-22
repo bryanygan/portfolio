@@ -83,9 +83,9 @@
     }
 
     // Smooth scroll for all anchor links
-    document.querySelectorAll('a[href^="/#"], a[href^="#"]').forEach(anchor => {
-      anchor.addEventListener('click', function (e) {
-        const href = this.getAttribute('href');
+    document.querySelectorAll<HTMLAnchorElement>('a[href^="/#"], a[href^="#"]').forEach(anchor => {
+      anchor.addEventListener('click', (e) => {
+        const href = anchor.getAttribute('href');
 
         // Skip if it's an external link or doesn't have a hash
         if (!href || (!href.startsWith('#') && !href.startsWith('/#'))) return;
