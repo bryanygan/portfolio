@@ -8,16 +8,28 @@ interface Experience {
   logo: string;
   position: string;
   period: string;
-  description: string;
+  description: string | string[];
 }
 
 const experiences: Experience[] = [
-{
+  {
+    company: 'Philadelphia College of Osteopathic Medicine',
+    logo: '/assets/svgs/pcom.png',
+    position: 'Information Technology Services Co-op',
+    period: 'Mar 2026 - Present',
+    description: [
+      'Collaborated with Technical Support Specialists to ensure optimal computer operations for end users.',
+      'Received, prioritized, and resolved end-user help requests while maintaining SLA expectations.',
+      'Provided hands-on technical assistance, including hardware and software installation and repair.',
+      'Documented and tracked service requests using TeamDynamix to enhance service efficiency.',
+    ],
+  },
+  {
     company: 'Drexel University',
     logo: '/assets/svgs/drexel.png',
     position: 'IMS Classroom AV & Graphics Lab Assistant',
-    period: 'March 2025 - Present',
-    description: 'Supported classroom technology and graphics services by troubleshooting AV issues, assisting users, handling equipment checkouts, and managing print jobs in a university media environment.'
+    period: 'March 2025 - September 2025',
+    description: 'Supported classroom technology and graphics services by troubleshooting AV issues, assisting users, handling equipment checkouts, and managing print jobs in a university media environment.',
   },
   {
     company: 'Advantage Solutions',
@@ -53,7 +65,13 @@ const experiences: Experience[] = [
             </div>
             
             <h4 class="text-lg font-bold mb-2 text-primary">{position}</h4>
-            <p class="text-gray-600 dark:text-gray-300 text-sm mt-auto">{description}</p>
+            {Array.isArray(description) ? (
+              <ul class="text-gray-600 dark:text-gray-300 text-sm mt-auto list-disc list-inside space-y-1">
+                {description.map((item) => <li>{item}</li>)}
+              </ul>
+            ) : (
+              <p class="text-gray-600 dark:text-gray-300 text-sm mt-auto">{description}</p>
+            )}
           </div>
         </Card>
       ))
