@@ -14,15 +14,10 @@ interface Experience {
 const experiences: Experience[] = [
   {
     company: 'Philadelphia College of Osteopathic Medicine',
-    logo: '/assets/svgs/pcom.png',
+    logo: '/assets/svgs/pcom.jpg',
     position: 'Information Technology Services Co-op',
     period: 'Mar 2026 - Present',
-    description: [
-      'Collaborated with Technical Support Specialists to ensure optimal computer operations for end users.',
-      'Received, prioritized, and resolved end-user help requests while maintaining SLA expectations.',
-      'Provided hands-on technical assistance, including hardware and software installation and repair.',
-      'Documented and tracked service requests using TeamDynamix to enhance service efficiency.',
-    ],
+    description: 'Resolved end-user help requests by providing hands-on technical support, managing hardware and software issues, and tracking service tickets in TeamDynamix to maintain SLA expectations.',
   },
   {
     company: 'Drexel University',
@@ -38,13 +33,7 @@ const experiences: Experience[] = [
     period: 'July 2024 - September 2024',
     description: 'Promoted Amazon Fresh products by preparing samples, engaging customers, maintaining food safety standards, and supporting in-store marketing efforts through active product demonstrations and feedback collection.'
   },
-  {
-    company: 'Eatontown Recreation',
-    logo: '/assets/svgs/eatontownrec.png',
-    position: 'Summer Camp Counselor',
-    period: 'July 2019 - September 2022',
-    description: 'Led youth activities, ensured camper safety and engagement, enforced camp policies, and maintained clean, organized recreational facilities while fostering a positive and inclusive camp environment.'
-  }
+
 ];
 ---
 
@@ -54,8 +43,8 @@ const experiences: Experience[] = [
       experiences.map(({ company, logo, position, period, description }) => (
         <Card hover={true} class="h-full">
           <div class="p-6 flex flex-col h-full">
-            <div class="flex items-center mb-4">
-              <div class="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden flex items-center justify-center mr-4">
+            <div class="flex items-center mb-4 min-h-[80px]">
+              <div class="w-12 h-12 bg-gray-100 dark:bg-gray-800 rounded-lg overflow-hidden flex items-center justify-center mr-4 flex-shrink-0">
                 <img src={logo} alt={company} class="w-10 h-10 object-contain" loading="lazy" />
               </div>
               <div>
@@ -63,8 +52,8 @@ const experiences: Experience[] = [
                 <p class="text-sm text-gray-500 dark:text-gray-400">{period}</p>
               </div>
             </div>
-            
-            <h4 class="text-lg font-bold mb-2 text-primary">{position}</h4>
+
+            <h4 class="text-lg font-bold mb-2 text-primary min-h-[3.5rem]">{position}</h4>
             {Array.isArray(description) ? (
               <ul class="text-gray-600 dark:text-gray-300 text-sm mt-auto list-disc list-inside space-y-1">
                 {description.map((item) => <li>{item}</li>)}
