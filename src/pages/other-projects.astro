@@ -1,0 +1,150 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Section from '../components/ui/Section.astro';
+import Card from '../components/ui/Card.astro';
+import Button from '../components/ui/Button.astro';
+
+interface OtherProject {
+  title: string;
+  description: string;
+  tags: string[];
+  repoUrl?: string;
+  liveUrl?: string;
+  liveLabel?: string;
+  isInternal?: boolean;
+}
+
+interface Group {
+  heading: string;
+  projects: OtherProject[];
+}
+
+const groups: Group[] = [
+  {
+    heading: 'Tools & Automation',
+    projects: [
+      {
+        title: 'Community Bot',
+        description: 'Discord bot for a community server: activity tracking via image posts, live USPS package tracking with auto-updating embeds, image lookups, deal alerts, and payment management with slash commands and role-based permissions.',
+        tags: ['Python', 'discord.py', 'USPS API', 'SQLite'],
+        repoUrl: 'https://github.com/bryanygan/zrbot'
+      },
+      {
+        title: 'ItemFinder',
+        description: 'Market-demand analytics system that mines chat logs, Reddit communities, and external market data to surface trending items, unmet demand, and scored purchase recommendations, with an interactive dashboard.',
+        tags: ['Python', 'Data Analysis', 'Dashboard', 'Reddit API'],
+        repoUrl: 'https://github.com/bryanygan/itemfinder'
+      },
+      {
+        title: 'Quote Builder',
+        description: 'Full-stack quoting tool that replaced a spreadsheet workflow, with cross-device persistence, per-quote pricing settings, autosave, and AI-assisted weight estimation using live web search.',
+        tags: ['Next.js', 'Express', 'Prisma', 'PostgreSQL', 'Perplexity API'],
+        liveUrl: 'https://haulmaker.pages.dev',
+        liveLabel: 'Live Site',
+        repoUrl: 'https://github.com/bryanygan/haulmaker'
+      },
+      {
+        title: 'Shipping Service Landing Page',
+        description: 'Marketing site for an international shipping and shopping-assistance service, with an auto-scrolling customer gallery, pricing comparison, how-it-works timeline, and FAQ accordion.',
+        tags: ['TypeScript', 'Responsive Design'],
+        liveUrl: 'https://zrhauls.com',
+        liveLabel: 'Live Site'
+      },
+      {
+        title: 'Discord Bot Suite',
+        description: 'Earlier automation bots for community management: order command generation, Gmail promo and OTP scraping, point tracking, and channel status management.',
+        tags: ['Python', 'Node.js', 'discord.py', 'discord.js'],
+        liveUrl: '/bots',
+        liveLabel: 'View Bots',
+        isInternal: true
+      },
+      {
+        title: 'NumberCruncher',
+        description: 'Discord bot that ingests webhook-posted order data and generates time-series charts and seasonal decomposition visualizations for automated business analytics.',
+        tags: ['Python', 'pandas', 'matplotlib', 'discord.py'],
+        repoUrl: 'https://github.com/bryanygan/numbercruncher'
+      }
+    ]
+  },
+  {
+    heading: 'Web & Hardware',
+    projects: [
+      {
+        title: 'SmartPanel',
+        description: 'Cache-first local hub API for a Raspberry Pi that aggregates Homebridge, Pi-hole, network health, weather, and todos into one fast endpoint for an iPad wall dashboard.',
+        tags: ['Python', 'FastAPI', 'Raspberry Pi', 'systemd'],
+        repoUrl: 'https://github.com/bryanygan/home-dashboard'
+      },
+      {
+        title: 'Card Formatter',
+        description: 'Web-based form generator that parses input, validates it, and produces ready-to-paste bot commands with clipboard integration. Built with vanilla HTML, CSS, and JavaScript.',
+        tags: ['HTML', 'CSS', 'JavaScript'],
+        liveUrl: 'https://format.prin.cloud/',
+        liveLabel: 'Live Site',
+        repoUrl: 'https://github.com/bryanygan/cardformatter'
+      },
+      {
+        title: 'Address Checker & Splitter',
+        description: 'Takes addresses as input, validates them through the Google Maps API, and returns them split into structured components.',
+        tags: ['JavaScript', 'Google Maps API'],
+        repoUrl: 'https://github.com/bryanygan/address-checker-splitter'
+      }
+    ]
+  }
+];
+---
+
+<Layout
+  title="Other Projects | Bryan Gan"
+  description="More of Bryan Gan's projects: automation bots, analytics tools, a Raspberry Pi smart-home hub, web utilities, and earlier work."
+>
+  <Section id="other-projects" title="Other Projects" subtitle="Smaller builds, experiments, and older work that didn't make the main list.">
+    <div class="space-y-12">
+      {
+        groups.map((group) => (
+          <div>
+            <h3 class="text-2xl font-bold mb-6">{group.heading}</h3>
+            <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {group.projects.map((project) => (
+                <Card hover={true} class="overflow-hidden h-full flex flex-col">
+                  <div class="p-6 flex-grow flex flex-col">
+                    <h4 class="text-xl font-bold mb-2">{project.title}</h4>
+                    <p class="text-gray-600 dark:text-gray-300 text-sm mb-4">{project.description}</p>
+
+                    <div class="mt-auto">
+                      <div class="flex flex-wrap gap-2 mb-4">
+                        {project.tags.map((tag) => (
+                          <span class="px-2 py-1 text-xs font-medium bg-primary/10 text-primary rounded-md">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+
+                      <div class="flex gap-3 flex-wrap">
+                        {project.liveUrl && (
+                          <Button href={project.liveUrl} variant="outline" target={project.isInternal ? undefined : '_blank'} size="lg">
+                            {project.liveLabel ?? 'View Project'}
+                          </Button>
+                        )}
+                        {project.repoUrl && (
+                          <Button href={project.repoUrl} target="_blank" variant="outline" size="lg">
+                            GitHub
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                </Card>
+              ))}
+            </div>
+          </div>
+        ))
+      }
+    </div>
+    <div class="text-center mt-12">
+      <Button href="https://github.com/bryanygan?tab=repositories" target="_blank" variant="primary" size="lg">
+        All Repositories on GitHub
+      </Button>
+    </div>
+  </Section>
+</Layout>
