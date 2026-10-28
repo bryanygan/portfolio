@@ -11,10 +11,43 @@ interface Project {
   liveUrl?: string;
   repoUrl?: string;
   demoUrl?: string;
+  liveLabel?: string;
+  repoLabel?: string;
+  extraLinks?: { label: string; href: string }[];
   isInternal?: boolean;
 }
 
 const projects: Project[] = [
+  {
+    title: 'GearMatch',
+    description: 'Quiz-based recommender that matches gaming mice, audio gear, keyboards, and monitors to your needs. A weighted 0-100 scoring engine runs in a Web Worker, with transparent reasoning for every pick and shareable, URL-based results.',
+    image: '/assets/images/projects/gearmatch.webp',
+    tags: ['React', 'TypeScript', 'Vite', 'Tailwind', 'Zod'],
+    liveUrl: 'https://gearmatch.app/',
+    repoUrl: 'https://github.com/bryanygan/gearmatch'
+  },
+  {
+    title: 'Event Tracker',
+    description: 'Local content assistant for a Philadelphia events TikTok page. Tracks concerts and Sixers home games, flags what is worth a video (new announcements, presales, stacked months), and drafts hooks, scripts, and captions with a local LLM for human review.',
+    image: '/assets/images/projects/eventtracker.webp',
+    tags: ['Python', 'Local LLM', 'Automation', 'Dashboard'],
+    repoUrl: 'https://github.com/bryanygan/event-tracker'
+  },
+  {
+    title: 'TikTok Spotify Slideshow',
+    description: 'Logs Spotify listening history, scores and selects tracks, and renders Now Playing card slideshows for TikTok. Includes a phone-friendly curation dashboard, screenshot OCR, album-art fallback, and 147 passing tests.',
+    image: '/assets/images/projects/ttspotslideshow.webp',
+    tags: ['Python', 'Pillow', 'OCR', 'Cloudflare', 'pytest'],
+    repoUrl: 'https://github.com/bryanygan/ttspotslideshow'
+  },
+  {
+    title: 'Crazy8s',
+    description: 'Real-time multiplayer card game with advanced sequential stacking mechanics, tournament elimination format, and robust reconnection system. Features JWT authentication, 95%+ test coverage, and support for 2-4 players with sophisticated turn control simulation.',
+    image: '/assets/images/projects/crazy8s.webp',
+    tags: ['React', 'Node.js', 'Express', 'Socket.IO', 'MongoDB', 'PostgreSQL', 'JWT'],
+    liveUrl: 'https://crazy8s.me/',
+    repoUrl: 'https://github.com/bryanygan/crazy8s'
+  },
   {
     title: 'Banking System',
     description: 'Interactive banking simulator with OOP design patterns, command-driven architecture, and comprehensive testing. Built with TypeScript + React, featuring 151 passing tests and educational documentation.',
@@ -26,33 +59,35 @@ const projects: Project[] = [
   },
   {
     title: 'MunchMatch',
-    description: 'Built a responsive web app that recommends meals based on user flavor preferences, contributing to both front-end design and Agile team development.',
+    description: 'Swipe-to-decide food discovery app that learns your taste and reveals a top-3 match. Began as a four-person Agile web prototype (HTML, CSS, JS); I then branched out on my own and rebuilt it as a React Native mobile app with 332 curated dishes, allergen filters, a taste-learning engine, and 112 passing tests.',
     image: '/assets/images/projects/munchmatch.webp',
-    tags: ['HTML', 'CSS', 'JavaScript', 'GitLab', 'Agile'],
+    tags: ['React Native', 'Expo', 'TypeScript', 'Zustand', 'Agile'],
     liveUrl: 'https://munchmatch.bryangan.com',
-    repoUrl: 'https://github.com/bryanygan/munchmatch'
+    liveLabel: 'Prototype Site',
+    repoUrl: 'https://github.com/bryanygan/munch',
+    repoLabel: 'Code (Mobile App)',
+    extraLinks: [{ label: 'Code (Prototype)', href: 'https://github.com/bryanygan/munchmatch-prototype' }]
   },
   {
-    title: 'Discord Bots',
-    description: 'Developed a suite of Discord automation bots designed for community management and workflow optimization: email/promo scraping, point tracking, channel status management, and streamlined food ordering with payment processing.',
-    image: '/assets/images/projects/discbot.webp',
-    tags: ['JavaScript', 'Node.js', 'Python', 'Databases', 'HTML'],
-    liveUrl: 'https://bryangan.com/bots',
-    demoUrl: '/bot-simulator',
+    title: 'PersonalApp',
+    description: 'SwiftUI iOS dashboard that turns an old iPhone into an always-on display, with a real-time analog clock, weather forecast, countdown timer, and web view in a split-screen layout.',
+    image: '/assets/images/projects/personalapp.webp',
+    tags: ['Swift', 'SwiftUI', 'iOS'],
+    repoUrl: 'https://github.com/bryanygan/personalapp'
+  },
+  {
+    title: 'Other Projects',
+    description: 'More builds, experiments, and older work: Discord bots, market analytics, a Raspberry Pi smart-home hub, web tools, and coursework.',
+    image: '/assets/images/projects/otherprojects.svg',
+    tags: ['Python', 'TypeScript', 'Discord', 'Raspberry Pi'],
+    liveUrl: '/other-projects',
+    liveLabel: 'Browse All',
     isInternal: true,
-  },
-  {
-    title: 'Crazy8s',
-    description: 'Real-time multiplayer card game with advanced sequential stacking mechanics, tournament elimination format, and robust reconnection system. Features JWT authentication, 95%+ test coverage, and support for 2-4 players with sophisticated turn control simulation.',
-    image: '/assets/images/projects/crazy8s.webp',
-    tags: ['React', 'Node.js', 'Express', 'Socket.IO', 'MongoDB', 'PostgreSQL', 'JWT'],
-    liveUrl: 'https://crazy8s.me/',
-    repoUrl: 'https://github.com/bryanygan/crazy8s'
   }
 ];
 ---
 
-<Section id="projects" title="Projects" subtitle="My best recent work and projects.">
+<Section id="projects" title="Projects" subtitle="A selection of my best recent work.">
   <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
     {
       projects.map((project) => (
@@ -76,7 +111,7 @@ const projects: Project[] = [
               <div class="flex gap-3 flex-wrap">
                 {project.liveUrl && (
                   <Button href={project.liveUrl} variant="outline" target={project.isInternal ? undefined : "_blank"} size="lg">
-                    View Project
+                    {project.liveLabel ?? 'View Project'}
                   </Button>
                 )}
                 {project.demoUrl && (
@@ -86,9 +121,14 @@ const projects: Project[] = [
                 )}
                 {project.repoUrl && (
                   <Button href={project.repoUrl} target="_blank" variant="outline" size="lg">
-                    Code
+                    {project.repoLabel ?? 'Code'}
                   </Button>
                 )}
+                {project.extraLinks?.map((link) => (
+                  <Button href={link.href} target="_blank" variant="outline" size="lg">
+                    {link.label}
+                  </Button>
+                ))}
               </div>
             </div>
           </div>

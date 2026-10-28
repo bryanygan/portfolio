@@ -117,3 +117,6 @@ connect.lock
 package-lock.json.backup
 yarn.lock.backup
 pnpm-lock.yaml.backup
+
+# Playwright MCP snapshots
+.playwright-mcp/
